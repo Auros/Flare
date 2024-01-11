@@ -1,13 +1,10 @@
 {
-    "name": "nexus.auros.flare.editor",
-    "rootNamespace": "Flare.Editor",
+    "name": "nexus.auros.flare",
+    "rootNamespace": "Flare",
     "references": [
-        "GUID:62ced99b048af7f4d8dfe4bed8373d76",
-        "GUID:794ffaba5b8a36f46bad8de96356654c"
+        "GUID:3456780c4fb2d324ab9c633d6f1b0ddb"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
