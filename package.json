@@ -1,0 +1,12 @@
+{
+  "name": "nexus.auros.flare",
+  "displayName": "Flare",
+  "version": "0.0.1-dev.1",
+  "unity": "2022.3",
+  "description": "Non-Destructive Avatar Building Tools for VRChat",
+  "vrchatVersion": "2023.4.1",
+  "author": {
+    "name": "Auros Nexus",
+    "url": "https://github.com/Auros/Flare"
+  }
+}
