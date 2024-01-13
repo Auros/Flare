@@ -1,5 +1,5 @@
 {
-    "name": "nexus.auros.flare.editor",
+    "name": "Flare.Editor",
     "rootNamespace": "Flare.Editor",
     "references": [
         "GUID:62ced99b048af7f4d8dfe4bed8373d76",

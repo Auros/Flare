@@ -3,7 +3,7 @@ using VRC.SDKBase;
 
 namespace Flare
 {
-    public abstract class FlareModule : MonoBehaviour, IEditorOnly
+    internal abstract class FlareModule : MonoBehaviour, IEditorOnly
     {
         
     }
