@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Extensions
 {
-    public static class UIToolkitExtensions
+    internal static class UIToolkitExtensions
     {
         public static Toggle GetToggle(this Foldout foldout)
         {
