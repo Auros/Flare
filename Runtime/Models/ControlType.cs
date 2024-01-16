@@ -2,7 +2,6 @@
 {
     internal enum ControlType
     {
-        None,
-        Toggle
+        Menu
     }
 }

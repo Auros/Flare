@@ -21,27 +21,27 @@ namespace Flare
 
         public bool Synchronize => _synchronizeNameWithGameObject;
 
+        public void SetName(string newName)
+        {
+            name = newName; 
+            _menuName = newName;
+        }
+  
         private void OnValidate()
         {
-            if (!_synchronizeNameWithGameObject)
-                return;
-
-            if (name == _menuName)
+            EditorControllers.Get<IFlareModuleHandler<FlareMenu>>(nameof(FlareMenu)).Add(this);
+            
+            // Only update the name if synchronization is on
+            // and if the names aren't matching.
+            if (!_synchronizeNameWithGameObject || name == _menuName)
                 return;
 
             SetName(name);
         }
 
-        private void Update()
+        private void OnDestroy()
         {
-            // Ensure the menu name is synchronized with the GameObject name.
-            OnValidate();
-        }
-
-        public void SetName(string newName)
-        {
-            name = newName;
-            _menuName = newName;
+            EditorControllers.Get<IFlareModuleHandler<FlareMenu>>(nameof(FlareMenu)).Remove(this);
         }
     }
 }

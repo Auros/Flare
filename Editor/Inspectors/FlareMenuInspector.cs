@@ -1,5 +1,4 @@
-﻿using System;
-using Flare.Editor.Elements;
+﻿using Flare.Editor.Elements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;

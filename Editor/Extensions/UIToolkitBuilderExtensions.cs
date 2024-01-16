@@ -77,6 +77,18 @@ namespace Flare.Editor.Extensions
             return element;
         }
 
+        public static PropertyField WithLabel(this PropertyField field, string label)
+        {
+            field.label = label;
+            return field;
+        }
+
+        public static PropertyField WithTooltip(this PropertyField field, string tooltip)
+        {
+            field.tooltip = tooltip;
+            return field;
+        }
+
         public static T WithFontStyle<T>(this T element, FontStyle fontStyle) where T : VisualElement
         {
             element.style.unityFontStyleAndWeight = fontStyle;

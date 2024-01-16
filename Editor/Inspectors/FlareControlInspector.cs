@@ -1,7 +1,8 @@
 ﻿using Flare.Editor.Attributes;
+using Flare.Editor.Elements;
 using Flare.Editor.Extensions;
+using Flare.Editor.Views;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Flare.Editor.Inspectors
@@ -12,19 +13,26 @@ namespace Flare.Editor.Inspectors
     {
         [PropertyName(nameof(FlareControl.Type))]
         private readonly SerializedProperty _typeProperty = null!;
-        
+
+        [PropertyName(nameof(FlareControl.MenuItem))]
+        private MenuItemControlView? _menuItemControlView;
+
+        protected override void OnInitialization()
+        {
+            if (target is not FlareControl control)
+                return;
+            
+            _menuItemControlView ??= new MenuItemControlView(control);
+        }
+
         protected override VisualElement BuildUI(VisualElement root)
         {
-            Foldout foldout = new() { text = "Toggle (Puffer)" };
-            root.Add(foldout);
+            root.CreatePropertyField(_typeProperty);
 
-            var foldoutToggle = foldout.GetToggle();
-            foldoutToggle.style.backgroundColor = EditorGUIUtility.isProSkin ? new Color(0.34f, 0.34f, 0.34f) : new Color(0.705f, 0.705f, 0.705f);
-            foldoutToggle.WithPadding(3f).WithRadius(5f);
-
-            foldout.CreatePropertyField(_typeProperty).label = "Control Type";
-
+            CategoricalFoldout foldout = new() { text = "Control" };
+            _menuItemControlView?.Build(foldout);
             
+            root.Add(foldout);
             
             return root;
         }
