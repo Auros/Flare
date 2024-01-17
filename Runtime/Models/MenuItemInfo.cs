@@ -16,6 +16,10 @@ namespace Flare.Models
         public MenuItemType Type { get; private set; } = MenuItemType.Toggle;
         
         [field: SerializeField]
-        public float DefaultValue { get; private set; }
+        public bool DefaultState { get; private set; }
+        
+        [field: Range(0, 1)]
+        [field: SerializeField]
+        public float DefaultRadialValue { get; private set; }
     }
 }
