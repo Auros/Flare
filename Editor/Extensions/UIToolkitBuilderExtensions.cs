@@ -1,4 +1,5 @@
-﻿using Flare.Editor.Elements;
+﻿using System;
+using Flare.Editor.Elements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -53,6 +54,13 @@ namespace Flare.Editor.Extensions
             return slider;
         }
 
+        public static EnumField CreateEnumField(this VisualElement element, Enum value)
+        {
+            EnumField field = new(value);
+            element.Add(field);
+            return field;
+        }
+
         public static Slider WithStart(this Slider slider, float start = 0.0f)
         {
             slider.lowValue = start;
@@ -101,9 +109,9 @@ namespace Flare.Editor.Extensions
             return element;
         }
         
-        public static T BindTo<T>(this T element, SerializedProperty property) where T : IBindable
+        public static T BindTo<T>(this T element, SerializedProperty? property) where T : IBindable
         {
-            element.bindingPath = property.propertyPath;
+            element.bindingPath = property?.propertyPath;
             return element;
         }
 
@@ -161,6 +169,12 @@ namespace Flare.Editor.Extensions
         public static T WithTextAlign<T>(this T element, TextAnchor align) where T : VisualElement
         {
             element.style.unityTextAlign = align;
+            return element;
+        }
+
+        public static T WithName<T>(this T element, string name) where T : VisualElement
+        {
+            element.name = name;
             return element;
         }
     }

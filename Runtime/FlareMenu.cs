@@ -7,10 +7,10 @@ namespace Flare
     internal class FlareMenu : FlareModule
     {   
         [SerializeField]
-        private string _menuName;
+        private string _menuName = string.Empty;
 
         [SerializeField]
-        private Texture2D _menuIcon;
+        private Texture2D _menuIcon = null!;
 
         [SerializeField]
         private bool _synchronizeNameWithGameObject = true;

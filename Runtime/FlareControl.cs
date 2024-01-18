@@ -20,6 +20,9 @@ namespace Flare
         
         private void OnValidate()
         {
+            foreach (var toggle in ObjectToggleCollection.Toggles)
+                toggle.EnsureValidated();
+            
             EditorControllers.Get<IFlareModuleHandler<FlareControl>>(nameof(FlareControl)).Add(this);
             
             // Only update the name if synchronization is on
