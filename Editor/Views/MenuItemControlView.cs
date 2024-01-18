@@ -51,6 +51,7 @@ namespace Flare.Editor.Views
 
             var defaultStateField = root.CreatePropertyField(_defaultStateProperty).WithLabel("Default Toggle Value")
                 .WithTooltip("Is this menu item ON or OFF by default?");
+            
             defaultStateField.style.marginTop = 2f; // (Fix) Toggle property fields are annoyingly smaller than others.
             
             var defaultRadialValueField = root.CreatePropertyField(_defaultRadialValueProperty);

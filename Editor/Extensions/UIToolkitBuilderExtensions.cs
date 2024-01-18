@@ -133,5 +133,35 @@ namespace Flare.Editor.Extensions
             element.style.marginBottom = margin;
             return element;
         }
+
+        public static T WithMarginTop<T>(this T element, float marginTop) where T : VisualElement
+        {
+            element.style.marginTop = marginTop;
+            return element;
+        }
+
+        public static T WithHeight<T>(this T element, float height) where T : VisualElement
+        {
+            element.style.height = height;
+            return element;
+        }
+        
+        public static T WithMinHeight<T>(this T element, float minHeight) where T : VisualElement
+        {
+            element.style.minHeight = minHeight;
+            return element;
+        }
+        
+        public static T WithMaxHeight<T>(this T element, float maxHeight) where T : VisualElement
+        {
+            element.style.maxHeight = maxHeight;
+            return element;
+        }
+
+        public static T WithTextAlign<T>(this T element, TextAnchor align) where T : VisualElement
+        {
+            element.style.unityTextAlign = align;
+            return element;
+        }
     }
 }

@@ -13,6 +13,9 @@ namespace Flare
         public MenuItemInfo MenuItem { get; private set; } = new();
 
         [field: SerializeField]
+        public ObjectToggleCollectionInfo ObjectToggleCollection { get; private set; } = new();
+
+        [field: SerializeField]
         public SettingsInfo Settings { get; private set; } = new();
         
         private void OnValidate()

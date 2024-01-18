@@ -17,11 +17,15 @@ namespace Flare.Editor.Inspectors
         [PropertyName(nameof(FlareControl.MenuItem))]
         private MenuItemControlView? _menuItemControlView;
 
+        [PropertyName(nameof(FlareControl.ObjectToggleCollection))]
+        private ObjectToggleView? _objectToggleView;
+
         protected override void OnInitialization()
         {
             if (target is not FlareControl control)
                 return;
             
+            _objectToggleView ??= new ObjectToggleView();
             _menuItemControlView ??= new MenuItemControlView(control);
         }
 
@@ -29,10 +33,13 @@ namespace Flare.Editor.Inspectors
         {
             root.CreatePropertyField(_typeProperty);
 
-            CategoricalFoldout foldout = new() { text = "Control" };
-            _menuItemControlView?.Build(foldout);
-            
-            root.Add(foldout);
+            CategoricalFoldout controlFoldout = new() { text = "Control" };
+            _menuItemControlView?.Build(controlFoldout);
+            root.Add(controlFoldout);
+
+            CategoricalFoldout toggleFoldout = new() { text = "Object Toggles" };
+            _objectToggleView?.Build(toggleFoldout);
+            root.Add(toggleFoldout);
             
             return root;
         }
