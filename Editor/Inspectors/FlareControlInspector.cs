@@ -19,6 +19,9 @@ namespace Flare.Editor.Inspectors
 
         [PropertyName(nameof(FlareControl.ObjectToggleCollection))]
         private ObjectToggleView? _objectToggleView;
+        
+        [PropertyName(nameof(FlareControl.PropertyGroupCollection))]
+        private PropertyGroupView? _propertyGroupView;
 
         protected override void OnInitialization()
         {
@@ -26,6 +29,7 @@ namespace Flare.Editor.Inspectors
                 return;
             
             _objectToggleView ??= new ObjectToggleView();
+            _propertyGroupView ??= new PropertyGroupView();
             _menuItemControlView ??= new MenuItemControlView(control);
         }
 
@@ -40,6 +44,10 @@ namespace Flare.Editor.Inspectors
             CategoricalFoldout toggleFoldout = new() { text = "Object Toggles" };
             _objectToggleView?.Build(toggleFoldout);
             root.Add(toggleFoldout);
+
+            CategoricalFoldout propertyFoldout = new() { text = "Property Groups" };
+            _propertyGroupView?.Build(propertyFoldout);
+            root.Add(propertyFoldout);
             
             return root;
         }

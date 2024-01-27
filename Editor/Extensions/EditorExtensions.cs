@@ -17,7 +17,7 @@
             return serializedObject.FindPropertyRelative(fieldName);
         }
 
-        public static SerializedProperty? Property(this SerializedProperty serializedObject, string propertyName)
+        public static SerializedProperty Property(this SerializedProperty serializedObject, string propertyName)
         {
             return serializedObject.FindPropertyRelative($"<{propertyName}>k__BackingField");
         }

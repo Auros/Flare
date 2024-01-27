@@ -1,6 +1,6 @@
 ﻿namespace Flare.Models
 {
-    public enum ToggleMode
+    internal enum ToggleMode
     {
         Enabled,
         Disabled

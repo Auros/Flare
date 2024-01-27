@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 namespace Flare.Models
 {
     [Serializable]
-    public class ObjectToggleInfo
+    internal class ObjectToggleInfo
     {
         [field: SerializeField]
         public Object? Target { get; private set; }

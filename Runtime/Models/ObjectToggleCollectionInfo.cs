@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Flare.Models
 {
     [Serializable]
-    public class ObjectToggleCollectionInfo
+    internal class ObjectToggleCollectionInfo
     {
         [field: SerializeField]
         public ObjectToggleInfo[] Toggles { get; private set; } = Array.Empty<ObjectToggleInfo>();

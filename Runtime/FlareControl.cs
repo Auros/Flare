@@ -14,6 +14,9 @@ namespace Flare
 
         [field: SerializeField]
         public ObjectToggleCollectionInfo ObjectToggleCollection { get; private set; } = new();
+        
+        [field: SerializeField]
+        public PropertyGroupCollectionInfo PropertyGroupCollection { get; private set; } = new();
 
         [field: SerializeField]
         public SettingsInfo Settings { get; private set; } = new();

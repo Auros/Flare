@@ -28,6 +28,14 @@ namespace Flare.Editor.Extensions
             element.Add(child);
             return child;
         }
+
+        public static Button CreateButton(this VisualElement element, string text, Action? action = null)
+        {
+            Button button = new(action) { text = text };
+            button.WithHeight(20f);
+            element.Add(button);
+            return button;
+        }
         
         public static PropertyField CreatePropertyField(this VisualElement element, SerializedProperty property)
         {
@@ -43,6 +51,13 @@ namespace Flare.Editor.Extensions
             return label;
         }
         
+        public static Label CreateFlareLabel(this VisualElement element, string text = "")
+        {
+            FlareLabel label = new(text);
+            element.Add(label);
+            return label;
+        }
+
         public static Slider CreateSlider(this VisualElement element)
         {
             Slider slider = new()
@@ -72,13 +87,7 @@ namespace Flare.Editor.Extensions
             slider.highValue = end;
             return slider;
         }
-
-        public static T WithLabel<T>(this T element, string label = "") where T : Slider
-        {
-            element.label = label;
-            return element;
-        }
-
+        
         public static T WithLabel<T, TValueType>(this T element, string label = "") where T : BaseField<TValueType>
         {
             element.label = label;
@@ -103,6 +112,12 @@ namespace Flare.Editor.Extensions
             return element;
         }
 
+        public static T WithFontSize<T>(this T element, float fontSize) where T : VisualElement
+        {
+            element.style.fontSize = fontSize;
+            return element;
+        }
+
         public static T BindTo<T>(this T element, string path) where T : IBindable
         {
             element.bindingPath = path;
@@ -124,7 +139,7 @@ namespace Flare.Editor.Extensions
             return element;
         }
 
-        public static T WithRadius<T>(this T element, float radius) where T : VisualElement
+        public static T WithBorderRadius<T>(this T element, float radius) where T : VisualElement
         {
             element.style.borderTopLeftRadius = radius;
             element.style.borderTopRightRadius = radius;
@@ -147,7 +162,49 @@ namespace Flare.Editor.Extensions
             element.style.marginTop = marginTop;
             return element;
         }
+        
+        public static T WithWidth<T>(this T element, float width) where T : VisualElement
+        {
+            element.style.width = width;
+            return element;
+        }
+        
+        public static T WithGrow<T>(this T element, float grow) where T : VisualElement
+        {
+            element.style.flexGrow = grow;
+            return element;
+        }
+        
+        public static T WithShrink<T>(this T element, float shrink) where T : VisualElement
+        {
+            element.style.flexGrow = shrink;
+            return element;
+        }
 
+        public static T WithBorderWidth<T>(this T element, float width) where T : VisualElement
+        {
+            element.style.borderTopWidth = width;
+            element.style.borderLeftWidth = width;
+            element.style.borderRightWidth = width;
+            element.style.borderBottomWidth = width;
+            return element;
+        }
+
+        public static T WithBorderColor<T>(this T element, Color color) where T : VisualElement
+        {
+            element.style.borderTopColor = color;
+            element.style.borderLeftColor = color;
+            element.style.borderRightColor = color;
+            element.style.borderBottomColor = color;
+            return element;
+        }
+
+        public static T WithBackgroundColor<T>(this T element, Color color) where T : VisualElement
+        {
+            element.style.backgroundColor = color;
+            return element;
+        }
+        
         public static T WithHeight<T>(this T element, float height) where T : VisualElement
         {
             element.style.height = height;

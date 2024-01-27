@@ -16,8 +16,10 @@ namespace Flare.Editor.Drawers
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             VisualElement root = new();
-            var context = property.Property(nameof(ObjectToggleInfo.Target))?.objectReferenceValue as GameObject;
-            var objectField = root.CreatePropertyField(property.Property(nameof(ObjectToggleInfo.Target))!)
+
+            var context = property.Property(nameof(ObjectToggleInfo.Target)).objectReferenceValue as GameObject;
+            var objectToggleInfoProperty = property.Property(nameof(ObjectToggleInfo.Target));
+            var objectField = root.CreatePropertyField(objectToggleInfoProperty)
                 .WithLabel(string.Empty);
             
             // This prevents PropertyFields from auto-adjusting the width of the labels
@@ -86,8 +88,8 @@ namespace Flare.Editor.Drawers
                 .BindTo(property.Property(nameof(ObjectToggleInfo.MenuMode)))
                 .WithHeight(20f);
 
-            UpdateModeFieldColor(menuModeField, (ToggleMode)property.Property(nameof(ObjectToggleInfo.MenuMode))!.enumValueIndex);
-            UpdateModeFieldColor(toggleModeField, (ToggleMode)property.Property(nameof(ObjectToggleInfo.ToggleMode))!.enumValueIndex);
+            UpdateModeFieldColor(menuModeField, (ToggleMode)property.Property(nameof(ObjectToggleInfo.MenuMode)).enumValueIndex);
+            UpdateModeFieldColor(toggleModeField, (ToggleMode)property.Property(nameof(ObjectToggleInfo.ToggleMode)).enumValueIndex);
             
             menuModeField.RegisterValueChangedCallback(UpdateToggleCallback);
             toggleModeField.RegisterValueChangedCallback(UpdateToggleCallback);

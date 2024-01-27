@@ -18,7 +18,7 @@ namespace Flare.Editor.Elements
             var color = darkMode ? new Color32(0x57, 0x57, 0x57, 0xFF) : new Color32(0xB4, 0xB4, 0xB4, 0xFF);
             
             toggle.style.backgroundColor = (Color)color;
-            toggle.WithPadding(2f).WithRadius(4f);
+            toggle.WithPadding(2f).WithBorderRadius(4f);
         }
     }
 }
