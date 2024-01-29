@@ -7,6 +7,9 @@ namespace Flare.Models
     internal class PropertyInfo
     {
         [field: SerializeField]
+        public string Name { get; set; } = string.Empty;
+        
+        [field: SerializeField]
         public string Path { get; set; } = string.Empty;
         
         [field: SerializeField]
@@ -16,10 +19,16 @@ namespace Flare.Models
         public PropertyColorType ColorType { get; set; }
 
         [field: SerializeField]
+        public string ContextType { get; set; } = string.Empty;
+
+        [field: SerializeField]
         public float Analog { get; private set; }
         
         [field: SerializeField]
         public Vector4 Vector { get; private set; }
+        
+        [field: SerializeField]
+        public ControlState State { get; private set; }
         
         public T GetPropertyValue<T>()
         {

@@ -13,18 +13,20 @@ namespace Flare.Editor.Services
         private readonly Type[] _types;
         private readonly GameObject _root;
         private readonly GameObject[] _gameObjects;
+        private bool _gameObjectSearch;
         
         /// <summary>
         /// Creates a binding service from the provided root that scans for property bindings recursively if
         /// the corresponding GameObject has one of those types.
         /// </summary>
         /// <param name="root">The binding root.</param>
+        /// <param name="gameObjects">The GameObjects to ignore.</param>
         /// <param name="types">The types to search for. If </param>
-        public BindingService(GameObject root, params Type[] types)
+        public BindingService(GameObject root, GameObject[] gameObjects, params Type[] types)
         {
             _root = root;
             _types = types;
-            _gameObjects = Array.Empty<GameObject>();
+            _gameObjects = gameObjects;
         }
         
         /// <summary>
@@ -37,6 +39,7 @@ namespace Flare.Editor.Services
             _root = root;
             _types = Array.Empty<Type>();
             _gameObjects = gameObjects;
+            _gameObjectSearch = true;
         }
 
         public T GetPropertyValue<T>(FlareProperty property)
@@ -66,7 +69,7 @@ namespace Flare.Editor.Services
                 var value = Vector4.zero;
                 for (int i = 0; i < prop.PseudoProperties.Count; i++)
                 {
-                    var glorg = AnimationUtility.GetFloatValue(_root, prop.PseudoProperties[i].Binding, out var floatValue);
+                    _ = AnimationUtility.GetFloatValue(_root, prop.PseudoProperties[i].Binding, out var floatValue);
                     value[i] = floatValue;
                 }
                 return value;
@@ -90,18 +93,23 @@ namespace Flare.Editor.Services
         public IEnumerable<FlareProperty> GetPropertyBindings()
         {
             GameObject[] objectsToSearch;
-            if (_gameObjects.Length is not 0)
+            if (_gameObjects.Length is not 0 && _gameObjectSearch)
                 objectsToSearch = _gameObjects.Where(g => g != null).ToArray();
             else if (_types.Length is not 0)
             {
                 objectsToSearch = _types.SelectMany(type =>
                 {
                     // Unfortunately we can't use a ListPool for this search as it requires a generic type to search.
-                    return _root.GetComponentsInChildren(type, true).Select(component => component.gameObject);
+                    return _root.GetComponentsInChildren(type, true)
+                        .Where(o => !_gameObjects.Contains(o.gameObject))
+                        .Select(component => component.gameObject);
                 }).Distinct().ToArray(); // Make it distinct first so there's no duplicate GameObjects.
             }
             else
             {
+                if (_gameObjectSearch)
+                    return Array.Empty<FlareProperty>();
+                
                 // We won't need this execution path but I still made it for completionism.
                 objectsToSearch = _root.GetComponentsInChildren<Component>(true)
                     .Select(component => component.gameObject)

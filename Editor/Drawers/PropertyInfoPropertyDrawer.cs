@@ -14,8 +14,16 @@ namespace Flare.Editor.Drawers
             VisualElement root = new();
             
             root.Add(new Button(() => OnPropertyRequestClick(property)) { text = "Select Property" });
-            var pathField = root.CreatePropertyField(property.Property(nameof(PropertyInfo.Path)));
-            pathField.SetEnabled(false);
+            VisualElement container = new();
+            
+            container.CreatePropertyField(property.Property(nameof(PropertyInfo.Name)));
+            // container.CreatePropertyField(property.Property(nameof(PropertyInfo.Path)));
+            // container.CreatePropertyField(property.Property(nameof(PropertyInfo.ColorType)));
+            // container.CreatePropertyField(property.Property(nameof(PropertyInfo.ValueType)));
+            
+            container.SetEnabled(false);
+            
+            root.Add(container);
             
             return root;
         }

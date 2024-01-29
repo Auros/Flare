@@ -49,7 +49,6 @@ namespace Flare.Editor.Drawers
 
                 var dropdown = toggleQuery.Q<ComponentDropdownField>();
                 dropdown.Push(newObj);
-                
             });
 
             var horizontal = root.CreateHorizontal()

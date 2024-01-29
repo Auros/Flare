@@ -1,19 +1,19 @@
 ﻿using Flare.Editor.Attributes;
 using Flare.Editor.Extensions;
 using Flare.Models;
-using UnityEditor;
 using UnityEngine.UIElements;
 
 namespace Flare.Editor.Views
 {
-    public class ObjectToggleView : IView
+    public class ObjectToggleCollectionView : IView
     {
         [PropertyName(nameof(ObjectToggleCollectionInfo.Toggles))]
-        private readonly SerializedProperty _togglesProperty = null!;
+        private readonly ObjectToggleView _objectToggleView = new();
         
         public void Build(VisualElement root)
         {
-            root.CreatePropertyField(_togglesProperty);
+            _objectToggleView.Build(root);
+            root.CreateHorizontalSpacer(20f);
         }
     }
 }

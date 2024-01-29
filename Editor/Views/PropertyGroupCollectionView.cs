@@ -6,14 +6,19 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Views
 {
-    public class PropertyGroupView : IView
+    public class PropertyGroupCollectionView : IView
     {
+        [PropertyName(nameof(PropertyGroupCollectionInfo.Groups))]
+        private readonly PropertyGroupView _propertyGroupView = new();
+
         [PropertyName(nameof(PropertyGroupCollectionInfo.Groups))]
         private readonly SerializedProperty _groupsProperty = null!;
         
         public void Build(VisualElement root)
         {
-            root.CreatePropertyField(_groupsProperty);
+            _propertyGroupView.Build(root);
+            //root.CreateHorizontalSpacer(20f);
+            //root.CreatePropertyField(_groupsProperty);
         }
     }
 }

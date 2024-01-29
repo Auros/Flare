@@ -12,6 +12,13 @@ namespace Flare.Editor.Extensions
     /// </summary>
     internal static class UIToolkitBuilderExtensions
     {
+        public static VisualElement CreateElement(this VisualElement element)
+        {
+            VisualElement child = new();
+            element.Add(child);
+            return child;
+        }
+        
         public static HorizontalSpacer CreateHorizontalSpacer(this VisualElement element, float height = 8f)
         {
             HorizontalSpacer spacer = new(height);
@@ -180,6 +187,12 @@ namespace Flare.Editor.Extensions
             element.style.flexGrow = shrink;
             return element;
         }
+        
+        public static T WithWrap<T>(this T element, Wrap wrap) where T : VisualElement
+        {
+            element.style.flexWrap = wrap;
+            return element;
+        }
 
         public static T WithBorderWidth<T>(this T element, float width) where T : VisualElement
         {
@@ -202,6 +215,12 @@ namespace Flare.Editor.Extensions
         public static T WithBackgroundColor<T>(this T element, Color color) where T : VisualElement
         {
             element.style.backgroundColor = color;
+            return element;
+        }
+        
+        public static T WithColor<T>(this T element, Color color) where T : VisualElement
+        {
+            element.style.color = color;
             return element;
         }
         
@@ -232,6 +251,18 @@ namespace Flare.Editor.Extensions
         public static T WithName<T>(this T element, string name) where T : VisualElement
         {
             element.name = name;
+            return element;
+        }
+        
+        public static T Visible<T>(this T element, bool visible) where T : VisualElement
+        {
+            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            return element;
+        }
+        
+        public static T Enabled<T>(this T element, bool enabled) where T : VisualElement
+        {
+            element.SetEnabled(enabled);
             return element;
         }
     }

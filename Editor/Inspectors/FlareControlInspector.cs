@@ -18,18 +18,18 @@ namespace Flare.Editor.Inspectors
         private MenuItemControlView? _menuItemControlView;
 
         [PropertyName(nameof(FlareControl.ObjectToggleCollection))]
-        private ObjectToggleView? _objectToggleView;
+        private ObjectToggleCollectionView? _objectToggleCollectionView;
         
         [PropertyName(nameof(FlareControl.PropertyGroupCollection))]
-        private PropertyGroupView? _propertyGroupView;
+        private PropertyGroupCollectionView? _propertyGroupCollectionView;
 
         protected override void OnInitialization()
         {
             if (target is not FlareControl control)
                 return;
             
-            _objectToggleView ??= new ObjectToggleView();
-            _propertyGroupView ??= new PropertyGroupView();
+            _objectToggleCollectionView ??= new ObjectToggleCollectionView();
+            _propertyGroupCollectionView ??= new PropertyGroupCollectionView();
             _menuItemControlView ??= new MenuItemControlView(control);
         }
 
@@ -42,11 +42,11 @@ namespace Flare.Editor.Inspectors
             root.Add(controlFoldout);
 
             CategoricalFoldout toggleFoldout = new() { text = "Object Toggles" };
-            _objectToggleView?.Build(toggleFoldout);
+            _objectToggleCollectionView?.Build(toggleFoldout);
             root.Add(toggleFoldout);
 
             CategoricalFoldout propertyFoldout = new() { text = "Property Groups" };
-            _propertyGroupView?.Build(propertyFoldout);
+            _propertyGroupCollectionView?.Build(propertyFoldout);
             root.Add(propertyFoldout);
             
             return root;
