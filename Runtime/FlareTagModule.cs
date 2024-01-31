@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace Flare
 {
-    internal class FlareLayerModule : FlareModule
+    internal class FlareTagModule : FlareModule
     {
         [field: SerializeField]
-        public string[] Layers { get; private set; } = Array.Empty<string>();
+        public string[] Tags { get; private set; } = Array.Empty<string>();
 
         [field: SerializeField]
         public FlareRule[] Rules { get; private set; } = Array.Empty<FlareRule>();

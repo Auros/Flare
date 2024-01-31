@@ -11,15 +11,15 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Elements
 {
-    public class LayerRuleElement : VisualElement, IFlareBindable
+    public class TagRuleElement : VisualElement, IFlareBindable
     {
         private readonly PaneMenu _paneMenu;
         private readonly EnumField _causeStateField;
         private readonly EnumField _effectStateField;
-        private readonly DropdownField _causeLayerDropdown;
-        private readonly DropdownField _effectLayerDropdown;
+        private readonly DropdownField _causeTagDropdown;
+        private readonly DropdownField _effectTagDropdown;
         
-        public LayerRuleElement(IEnumerable<string> layers)
+        public TagRuleElement(IEnumerable<string> tags)
         {
             _paneMenu = new PaneMenu();
             
@@ -38,18 +38,18 @@ namespace Flare.Editor.Elements
                 .WithMinHeight(24f)
                 .WithShrink(24f);
             
-            // Add text: "When a control from the layer"
-            root.CreateLabel("When a control from the layer")
+            // Add text: "When a control with a tag"
+            root.CreateLabel("When a control with a tag")
                 .WithTextAlign(TextAnchor.MiddleCenter)
                 .WithHeight(20f);
             
-            // [LAYER]
-            _causeLayerDropdown = new DropdownField
+            // [TAG]
+            _causeTagDropdown = new DropdownField
             {
                 // ReSharper disable once PossibleMultipleEnumeration
-                choices = layers.ToList()
+                choices = tags.ToList()
             }.WithHeight(20f);
-            root.Add(_causeLayerDropdown);
+            root.Add(_causeTagDropdown);
 
             // Add text: "becomes"
             root.CreateLabel("  becomes")
@@ -64,18 +64,18 @@ namespace Flare.Editor.Elements
                 .WithTextAlign(TextAnchor.MiddleCenter)
                 .WithHeight(20f);
             
-            // Add text: "all the controls with the layer"
-            root.CreateLabel("all the controls with the layer")
+            // Add text: "all the controls with a tag"
+            root.CreateLabel("all the controls with a tag")
                 .WithTextAlign(TextAnchor.MiddleCenter)
                 .WithHeight(20f);
             
             // [LAYER]
-            _effectLayerDropdown = new DropdownField
+            _effectTagDropdown = new DropdownField
             {
                 // ReSharper disable once PossibleMultipleEnumeration (we want multiple copies)
-                choices = layers.ToList()
+                choices = tags.ToList()
             }.WithHeight(20f);
-            root.Add(_effectLayerDropdown);
+            root.Add(_effectTagDropdown);
             
             // Add text: "  should be set to"
             root.CreateLabel("  should be set to")
@@ -94,16 +94,16 @@ namespace Flare.Editor.Elements
         {
             _causeStateField.Unbind();
             _effectStateField.Unbind();
-            _causeLayerDropdown.Unbind();
-            _effectLayerDropdown.Unbind();
+            _causeTagDropdown.Unbind();
+            _effectTagDropdown.Unbind();
             
             var causeStateProperty = property.Property(nameof(FlareRule.CauseState));
             var effectStateProperty = property.Property(nameof(FlareRule.EffectState));
 
             _causeStateField.BindProperty(causeStateProperty);
             _effectStateField.BindProperty(effectStateProperty);
-            _causeLayerDropdown.BindProperty(property.Property(nameof(FlareRule.CauseLayer)));
-            _effectLayerDropdown.BindProperty(property.Property(nameof(FlareRule.EffectLayer)));
+            _causeTagDropdown.BindProperty(property.Property(nameof(FlareRule.CauseLayer)));
+            _effectTagDropdown.BindProperty(property.Property(nameof(FlareRule.EffectLayer)));
             
             OnModeFieldChanged(_causeStateField, (ToggleMode)causeStateProperty.enumValueIndex);
             OnModeFieldChanged(_effectStateField, (ToggleMode)effectStateProperty.enumValueIndex);

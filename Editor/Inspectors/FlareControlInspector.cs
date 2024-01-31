@@ -22,8 +22,8 @@ namespace Flare.Editor.Inspectors
         [PropertyName(nameof(FlareControl.PropertyGroupCollection))]
         private PropertyGroupCollectionView? _propertyGroupCollectionView;
         
-        [PropertyName(nameof(FlareControl.LayerInfo))]
-        private LayerInfoView? _layerInfoView;
+        [PropertyName(nameof(FlareControl.TagInfo))]
+        private TagInfoView? _tagInfoView;
 
         protected override void OnInitialization()
         {
@@ -33,7 +33,7 @@ namespace Flare.Editor.Inspectors
             _objectToggleCollectionView ??= new ObjectToggleCollectionView();
             _propertyGroupCollectionView ??= new PropertyGroupCollectionView();
             _menuItemControlView ??= new MenuItemControlView(control);
-            _layerInfoView ??= new LayerInfoView();
+            _tagInfoView ??= new TagInfoView();
         }
 
         protected override VisualElement BuildUI(VisualElement root)
@@ -52,9 +52,9 @@ namespace Flare.Editor.Inspectors
             _propertyGroupCollectionView?.Build(propertyFoldout);
             root.Add(propertyFoldout);
             
-            CategoricalFoldout layerFoldout = new() { text = "Layers" };
-            _layerInfoView?.Build(layerFoldout);
-            root.Add(layerFoldout);
+            CategoricalFoldout tagFoldout = new() { text = "Tags" };
+            _tagInfoView?.Build(tagFoldout);
+            root.Add(tagFoldout);
             
             return root;
         }

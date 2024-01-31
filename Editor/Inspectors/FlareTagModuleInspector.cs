@@ -10,24 +10,24 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Inspectors
 {
-    [CustomEditor(typeof(FlareLayerModule))]
-    public class FlareLayerModuleInspector : FlareInspector
+    [CustomEditor(typeof(FlareTagModule))]
+    public class FlareTagModuleInspector : FlareInspector
     {
-        [PropertyName(nameof(FlareLayerModule.Rules))]
+        [PropertyName(nameof(FlareTagModule.Rules))]
         private readonly SerializedProperty _rulesProperty = null!;
         
-        [PropertyName(nameof(FlareLayerModule.Layers))]
+        [PropertyName(nameof(FlareTagModule.Tags))]
         private readonly SerializedProperty _layersProperty = null!;
         
         protected override VisualElement BuildUI(VisualElement root)
         {
-            CategoricalFoldout layersFoldout = new() { text = "Layers" };
-            layersFoldout.CreatePropertyField(_layersProperty);
+            CategoricalFoldout layersFoldout = new() { text = "Tags" };
+            layersFoldout.CreatePropertyField(_layersProperty).WithName("Tags");
             root.Add(layersFoldout);
 
             CategoricalFoldout rulesFoldout = new() { text = "Rules" };
 
-            var module = (target as FlareLayerModule)!;
+            var module = (target as FlareTagModule)!;
 
             BuildRulesUI(rulesFoldout, module);
             
@@ -42,14 +42,14 @@ namespace Flare.Editor.Inspectors
             root.Add(rulesFoldout);
 
             List<string> previousLayers = new();
-            previousLayers.AddRange(module.Layers);
+            previousLayers.AddRange(module.Tags);
             root.schedule.Execute(() =>
             {
-                if (previousLayers.SequenceEqual(module.Layers))
+                if (previousLayers.SequenceEqual(module.Tags))
                     return;
                 
                 previousLayers.Clear();
-                previousLayers.AddRange(module.Layers);
+                previousLayers.AddRange(module.Tags);
                 rulesFoldout.Remove(rulesFoldout.Q("RulesList"));
                 BuildRulesUI(rulesFoldout, module);
 
@@ -58,12 +58,12 @@ namespace Flare.Editor.Inspectors
             return root;
         }
 
-        private void BuildRulesUI(VisualElement root, FlareLayerModule module)
+        private void BuildRulesUI(VisualElement root, FlareTagModule module)
         {
             var rulesArrayProperty = _rulesProperty.Field("Array")!;
-            FlareCollectionView<LayerRuleElement> rules = new(() =>
+            FlareCollectionView<TagRuleElement> rules = new(() =>
             {
-                LayerRuleElement rule = new(module.Layers);
+                TagRuleElement rule = new(module.Tags);
                 rule.WithBackgroundColor(FlareUI.BackgroundColor)
                     .WithBorderColor(FlareUI.BorderColor)
                     .WithBorderRadius(3f)

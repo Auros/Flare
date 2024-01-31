@@ -1,17 +1,15 @@
 ﻿using System.Linq;
 using Flare.Editor.Editor.Extensions;
 using Flare.Editor.Extensions;
+using Flare.Models;
 using UnityEditor;
-using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 using VRC.SDKBase;
-using FlareLayer = Flare.Models.FlareLayer;
 
 namespace Flare.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(FlareLayer))]
-    public class FlareLayerPropertyDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(FlareTag))]
+    public class FlareTagPropertyDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
@@ -19,7 +17,7 @@ namespace Flare.Editor.Drawers
             var flareControl = property.serializedObject.targetObject as FlareControl;
             if (flareControl == null)
             {
-                root.CreateLabel("FlareLayer proeprty not located on FlareControl").WithPadding(3f);
+                root.CreateLabel("FlareTag property not located on FlareControl").WithPadding(3f);
                 return root;
             }
             
@@ -30,37 +28,37 @@ namespace Flare.Editor.Drawers
                 return root;
             }
 
-            var layerInfo = flareControl.LayerInfo;
+            var layerInfo = flareControl.TagInfo;
             
             if (!layerInfo.EnsureValidated(flareControl.gameObject))
             {
-                root.CreateLabel("Cannot find Layer Module");
+                root.CreateLabel("Cannot find Tag Module");
                 return root;
             }
 
-            var module = flareControl.LayerInfo.Module;
+            var module = flareControl.TagInfo.Module;
 
-            if (module!.Layers.Length is 0)
+            if (module!.Tags.Length is 0)
             {
-                root.CreateLabel("No labels exist! Create some in the Layer Module").WithPadding(3f);
+                root.CreateLabel("No labels exist! Create some in the Tag Module").WithPadding(3f);
                 return root;
             }
 
             DropdownField dropdown = new()
             {
                 index = 0,
-                label = "Layer",
-                choices = module.Layers.Prepend("Select Layer").ToList()
+                label = "Tag",
+                choices = module.Tags.Prepend("Select Tag").ToList()
             };
 
-            var valueProperty = property.Property(nameof(FlareLayer.Value));
+            var valueProperty = property.Property(nameof(FlareTag.Value));
             dropdown.RegisterValueChangedCallback(evt =>
             {
                 valueProperty.SetValue(dropdown.index is 0 ? string.Empty : evt.newValue);
             });
 
             var layer = valueProperty.stringValue;
-            var targetIndex = layer != string.Empty ? module.Layers.ToList().IndexOf(valueProperty.stringValue) : -1;
+            var targetIndex = layer != string.Empty ? module.Tags.ToList().IndexOf(valueProperty.stringValue) : -1;
             dropdown.index = targetIndex is -1 ? 0 : ++targetIndex;
             
             root.Add(dropdown);
