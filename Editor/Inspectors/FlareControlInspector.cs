@@ -7,7 +7,6 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Inspectors
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(FlareControl))]
     public class FlareControlInspector : FlareInspector
     {
@@ -22,6 +21,9 @@ namespace Flare.Editor.Inspectors
         
         [PropertyName(nameof(FlareControl.PropertyGroupCollection))]
         private PropertyGroupCollectionView? _propertyGroupCollectionView;
+        
+        [PropertyName(nameof(FlareControl.LayerInfo))]
+        private LayerInfoView? _layerInfoView;
 
         protected override void OnInitialization()
         {
@@ -31,6 +33,7 @@ namespace Flare.Editor.Inspectors
             _objectToggleCollectionView ??= new ObjectToggleCollectionView();
             _propertyGroupCollectionView ??= new PropertyGroupCollectionView();
             _menuItemControlView ??= new MenuItemControlView(control);
+            _layerInfoView ??= new LayerInfoView();
         }
 
         protected override VisualElement BuildUI(VisualElement root)
@@ -48,6 +51,10 @@ namespace Flare.Editor.Inspectors
             CategoricalFoldout propertyFoldout = new() { text = "Property Groups" };
             _propertyGroupCollectionView?.Build(propertyFoldout);
             root.Add(propertyFoldout);
+            
+            CategoricalFoldout layerFoldout = new() { text = "Layers" };
+            _layerInfoView?.Build(layerFoldout);
+            root.Add(layerFoldout);
             
             return root;
         }

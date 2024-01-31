@@ -99,6 +99,7 @@ namespace Flare.Editor.Inspectors
                     if (view is null)
                         continue;
 
+                    // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
                     InjectSerializedProperties(view, prop => property.Property(prop) ?? property.Field(prop));
                 }
             }

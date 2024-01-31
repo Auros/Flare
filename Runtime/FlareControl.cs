@@ -19,10 +19,15 @@ namespace Flare
         public PropertyGroupCollectionInfo PropertyGroupCollection { get; private set; } = new();
 
         [field: SerializeField]
+        public LayerInfo LayerInfo { get; private set; } = new();
+        
+        [field: SerializeField]
         public SettingsInfo Settings { get; private set; } = new();
         
         private void OnValidate()
         {
+            LayerInfo.EnsureValidated(gameObject);
+            
             foreach (var toggle in ObjectToggleCollection.Toggles)
                 toggle.EnsureValidated();
             

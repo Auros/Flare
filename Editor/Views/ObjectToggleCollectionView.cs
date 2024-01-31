@@ -13,7 +13,7 @@ namespace Flare.Editor.Views
         public void Build(VisualElement root)
         {
             _objectToggleView.Build(root);
-            root.CreateHorizontalSpacer(20f);
+            root.CreateHorizontalSpacer(5f);
         }
     }
 }
