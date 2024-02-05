@@ -26,7 +26,8 @@ namespace Flare.Editor
                 .Run<ControlPass>()
                 .Then.Run<ParametrizationPass>()
                 .Then.Run<MenuizationPass>()
-                .Then.Run<TagizationPass>();
+                .Then.Run<TagizationPass>()
+                .Then.Run<CleansePass>();
         }
     }
 }
