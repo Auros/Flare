@@ -1,4 +1,5 @@
-﻿using nadena.dev.ndmf;
+﻿using System.Linq;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
@@ -21,7 +22,14 @@ namespace Flare.Editor.Passes
             
             var newParams = ScriptableObject.CreateInstance<VRCExpressionParameters>();
             newParams.name = "[Flare] Expression Parameters";
-            newParams.parameters = vrcParams.parameters;
+            newParams.parameters = vrcParams.parameters.Select(p => new VRCExpressionParameters.Parameter
+            {
+                name = p.name,
+                saved = p.saved,
+                valueType = p.valueType,
+                defaultValue = p.defaultValue,
+                networkSynced = p.networkSynced
+            }).ToArray();
             
             AssetDatabase.AddObjectToAsset(newParams, context.AssetContainer);
             descriptor.expressionParameters = vrcParams;

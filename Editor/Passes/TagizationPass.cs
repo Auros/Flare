@@ -12,6 +12,8 @@ namespace Flare.Editor.Passes
 {
     internal class TagizationPass : Pass<TagizationPass>
     {
+        public override string DisplayName => "Tagization";
+
         protected override void Execute(BuildContext context)
         {
             var flare = context.GetState<FlareAvatarContext>();
@@ -52,18 +54,9 @@ namespace Flare.Editor.Passes
 
             var tagDriverLayer = sucrose.NewLayer().WithName("[Flare] Tag Driver");
             var tagDriverDefaultState = tagDriverLayer.NewState().WithName("Default / Reset").WithMotion(emptyAnimation);
-            
-            var tagParamDriver = tagDriverDefaultState.GetStateMachineBehaviour<VRCAvatarParameterDriver>();
-            
+
             foreach (var (tag, param) in tagDriverParameters)
             {
-                /*tagParamDriver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
-                    type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = param.Name,
-                    value = 0
-                });*/
-
                 var tagOnState = tagDriverLayer.NewState().WithName($"{tag} Activator").WithMotion(emptyAnimation);
                 var tagOffState = tagDriverLayer.NewState().WithName($"{tag} Deactivator").WithMotion(emptyAnimation);
 

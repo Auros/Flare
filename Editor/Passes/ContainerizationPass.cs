@@ -16,6 +16,8 @@ namespace Flare.Editor.Passes
     /// </summary>
     internal class ContainerizationPass : Pass<ContainerizationPass>
     {
+        public override string DisplayName => "Containerization";
+
         protected override void Execute(BuildContext context)
         {
             var flare = context.GetState<FlareAvatarContext>();

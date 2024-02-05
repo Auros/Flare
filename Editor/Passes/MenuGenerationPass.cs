@@ -14,41 +14,40 @@ namespace Flare.Editor.Passes
         {
             // Because of the way Flare Folders work, we clone every submenu.
             var descriptor = context.AvatarDescriptor;
-
-            foreach (var control in descriptor.expressionsMenu.controls)
-                CloneSubmenu(control, context.AssetContainer);
-            
-            if (!EditorUtility.IsPersistent(descriptor.expressionsMenu))
-                return;
-            
-            var newMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-            newMenu.controls = descriptor.expressionsMenu.controls.ToList();
-            newMenu.name = "[Flare] Expression Menu";
-            
-            AssetDatabase.AddObjectToAsset(newMenu, context.AssetContainer);
-            descriptor.expressionsMenu = newMenu;
+            descriptor.expressionsMenu = Clone(descriptor.expressionsMenu, context.AssetContainer);
         }
 
-        private static void CloneSubmenu(VRCExpressionsMenu.Control control, Object container)
+        private static VRCExpressionsMenu? Clone(VRCExpressionsMenu? menu, Object container)
         {
-            if (control.subMenu == null)
-                return;
+            if (menu == null)
+                return null;
 
-            if (control.type is not VRCExpressionsMenu.Control.ControlType.SubMenu)
-                return;
+            // Clone persistent menu
+            if (EditorUtility.IsPersistent(menu))
+            {
+                var newMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+                newMenu.name = $"[Flare] {menu.name} (Clone)";
+                newMenu.controls = menu.controls.Select(old => new VRCExpressionsMenu.Control
+                {
+                    icon = old.icon,
+                    labels = old.labels.Select(l => l).ToArray(), // Copy labels directly and make new array
+                    name = old.name,
+                    parameter = new VRCExpressionsMenu.Control.Parameter {name = old.parameter.name },
+                    style = old.style,
+                    subMenu = old.subMenu,
+                    subParameters = old.subParameters.Select(oldSub => new VRCExpressionsMenu.Control.Parameter { name = oldSub.name }).ToArray(),
+                    type = old.type,
+                    value = old.value
+                }).ToList();
+                AssetDatabase.AddObjectToAsset(newMenu, container);
+                menu = newMenu;
+            }
 
-            if (!EditorUtility.IsPersistent(control.subMenu))
-                return;
+            foreach (var control in menu.controls)
+                if (control.type is VRCExpressionsMenu.Control.ControlType.SubMenu)
+                    control.subMenu = Clone(control.subMenu, container);
 
-            var newMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-            newMenu.name = $"[Flare] {control.subMenu.name} (Clone)";
-            newMenu.controls = control.subMenu.controls.ToList();
-            control.subMenu = newMenu;
-            
-            AssetDatabase.AddObjectToAsset(newMenu, container);
-            
-            foreach (var subMenuControl in control.subMenu.controls)
-                CloneSubmenu(subMenuControl, container);
+            return menu;
         }
     }
 }
