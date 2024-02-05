@@ -6,11 +6,14 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using Object = UnityEngine.Object;
 
 namespace Flare.Editor.Passes
 {
     internal class MenuizationPass : Pass<MenuizationPass>
     {
+        private static readonly string _subId = Guid.NewGuid().ToString();
+        
         public override string DisplayName => "Control and Tag Expression Menuization";
         
         protected override void Execute(BuildContext context)
@@ -89,6 +92,66 @@ namespace Flare.Editor.Passes
                 }
                 
                 targetMenu.controls.Add(menuControl);
+            }
+            
+            // We might've added too many controls, so we auto-generate folders.
+            ShrinkAndNestFolderization(expressions, context.AssetContainer);
+            RenameFlareSubfolders(expressions);
+        }
+
+        private static void ShrinkAndNestFolderization(VRCExpressionsMenu menu, Object container)
+        {
+            foreach (var control in menu.controls)
+                if (control.type is VRCExpressionsMenu.Control.ControlType.SubMenu && control.subMenu != null)
+                    ShrinkAndNestFolderization(control.subMenu, container);
+            
+            if (8 >= menu.controls.Count)
+                return;
+
+            while (menu.controls.Count > 8)
+            {
+                var more = menu.controls.FirstOrDefault(
+                    c => c.type is VRCExpressionsMenu.Control.ControlType.SubMenu && c.name == _subId
+                );
+
+                if (more == null)
+                {
+                    var subMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+                    subMenu.controls.AddRange(menu.controls.Skip(7)); // Take all controls except first seven.
+                    subMenu.name = "Flare Subfolder";
+                    
+                    AssetDatabase.AddObjectToAsset(subMenu, container);
+                    
+                    more = new VRCExpressionsMenu.Control
+                    {
+                        name = _subId,
+                        subMenu = subMenu,
+                        type = VRCExpressionsMenu.Control.ControlType.SubMenu
+                    };
+                }
+                
+                // Set controls to first seven + our subfolder
+                menu.controls = menu.controls.Take(7).Append(more).ToList();
+                
+                // Do the same for all submenus
+                foreach (var control in menu.controls)
+                    if (control.type is VRCExpressionsMenu.Control.ControlType.SubMenu && control.subMenu != null)
+                        ShrinkAndNestFolderization(control.subMenu, container);
+            }
+        }
+
+        private static void RenameFlareSubfolders(VRCExpressionsMenu menu)
+        {
+            // Renames all auto-generated subfolders (which we use a guid to identify them during setup) to "MORE..."
+            foreach (var control in menu.controls)
+            {
+                if (control.type is not VRCExpressionsMenu.Control.ControlType.SubMenu || control.subMenu == null)
+                    continue;
+                
+                if (control.name == _subId)
+                    control.name = "MORE...";
+                    
+                RenameFlareSubfolders(control.subMenu);
             }
         }
     }

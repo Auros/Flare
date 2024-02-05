@@ -39,6 +39,7 @@ namespace Flare.Editor.Passes
                     type = old.type,
                     value = old.value
                 }).ToList();
+                
                 AssetDatabase.AddObjectToAsset(newMenu, container);
                 menu = newMenu;
             }
