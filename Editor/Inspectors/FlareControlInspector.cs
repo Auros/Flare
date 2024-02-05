@@ -6,7 +6,6 @@ using Flare.Editor.Extensions;
 using Flare.Editor.Views;
 using Flare.Models;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -91,15 +90,32 @@ namespace Flare.Editor.Inspectors
             typeField.RegisterValueChangeCallback(evt => UpdateFoldout((ControlType)evt.changedProperty.enumValueIndex));
             UpdateFoldout((ControlType)_typeProperty.enumValueIndex);
 
-            CategoricalFoldout toggleFoldout = new() { text = "Object Toggles" };
+            CategoricalFoldout toggleFoldout = new()
+            {
+                text = "Object Toggles",
+                value = EditorPrefs.GetBool("nexus.auros.flare.objectTogglesFoldout", true)
+            };
+            toggleFoldout.RegisterValueChangedCallback(_ =>
+            {
+                EditorPrefs.SetBool("nexus.auros.flare.objectTogglesFoldout", toggleFoldout.value);
+            });
             _objectToggleCollectionView?.Build(toggleFoldout);
             root.Add(toggleFoldout);
 
-            CategoricalFoldout propertyFoldout = new() { text = "Property Groups" };
+            CategoricalFoldout propertyFoldout = new()
+            {
+                text = "Property Groups",
+                value = EditorPrefs.GetBool("nexus.auros.flare.propertyGroupsFoldout", false)
+            };
+            propertyFoldout.RegisterValueChangedCallback(_ =>
+            {
+                EditorPrefs.SetBool("nexus.auros.flare.propertyGroupsFoldout", propertyFoldout.value);
+            });
+            
             _propertyGroupCollectionView.Build(propertyFoldout);
             root.Add(propertyFoldout);
             
-            CategoricalFoldout tagFoldout = new() { text = "Tags", value = false };
+            CategoricalFoldout tagFoldout = new() { text = "Tags (Experimental)", value = false };
             _tagInfoView.Build(tagFoldout);
             root.Add(tagFoldout);
 

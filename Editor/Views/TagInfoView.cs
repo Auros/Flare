@@ -8,7 +8,7 @@ namespace Flare.Editor.Views
 {
     internal class TagInfoView : IView
     {
-        private const string _helpText = "Tags allow you to trigger many controls at once using a simple rule system. When a tag is enabled or disabled, a rule can be triggered which causes controls of another tag to be activated/deactivated. Create new tags in the Flare Tag Module";
+        //private const string _helpText = "Tags allow you to trigger many controls at once using a simple rule system. When a tag is enabled or disabled, a rule can be triggered which causes controls of another tag to be activated/deactivated. Create new tags in the Flare Tag Module";
 
         [PropertyName(nameof(TagInfo.Module))]
         private readonly SerializedProperty _moduleProperty = null!;
@@ -18,7 +18,7 @@ namespace Flare.Editor.Views
         
         public void Build(VisualElement root)
         {
-            HelpBox help = new(_helpText, HelpBoxMessageType.Info);
+            HelpBox help = new("This feature is subject to breaking changes in the future.", HelpBoxMessageType.Warning);
             root.Add(help);
 
             root.CreateButton("Go To Tag Module", () =>

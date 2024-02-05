@@ -94,8 +94,8 @@ namespace Flare.Editor.Elements
         private static void OnModeFieldChanged(EnumField field, ToggleMode value)
         {
             // Color the enum dropdown text according to the value of the toggle mode.
-            var enabledColor = (Color)new Color32(0x5B, 0xDD, 0x55, 0xFF);
-            var disabledColor = (Color)new Color32(0xFF, 0x7C, 0x7C, 0xFF);
+            var enabledColor = FlareUI.EnabledColor;
+            var disabledColor = FlareUI.DisabledColor;
             
             var targetColor = value is ToggleMode.Enabled ? enabledColor : disabledColor;
             

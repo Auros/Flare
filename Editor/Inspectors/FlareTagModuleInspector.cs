@@ -21,6 +21,9 @@ namespace Flare.Editor.Inspectors
         
         protected override VisualElement BuildUI(VisualElement root)
         {
+            HelpBox help = new("This feature is subject to breaking changes in the future.", HelpBoxMessageType.Warning);
+            root.Add(help);
+            
             CategoricalFoldout layersFoldout = new() { text = "Tags" };
             layersFoldout.CreatePropertyField(_layersProperty).WithName("Tags");
             root.Add(layersFoldout);
