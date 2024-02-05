@@ -1,5 +1,7 @@
-﻿using Flare.Models;
+﻿using System.Collections.Generic;
+using Flare.Models;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 namespace Flare
 {
@@ -59,6 +61,54 @@ namespace Flare
         {
             name = newName;
             MenuItem.Name = newName;
+        }
+
+        public void GetReferencesNotOnAvatar(ICollection<Object?> references)
+        {
+            var descriptor = transform.GetComponentInParent<VRCAvatarDescriptor>();
+            if (!descriptor)
+                return;
+
+            var root = descriptor.transform;
+            foreach (var toggle in ObjectToggleCollection.Toggles)
+            {
+                var target = toggle.GetTargetTransform();
+                SearchTransform(root, target, toggle.Target, references);
+            }
+
+            foreach (var group in PropertyGroupCollection.Groups)
+            {
+                var search = group.SelectionType is PropertySelectionType.Normal ? group.Inclusions : group.Exclusions;
+                foreach (var item in search)
+                {
+                    if (item == null)
+                        continue;
+                    
+                    SearchTransform(root, item.transform, item, references);
+                }
+            }
+        }
+
+        private static void SearchTransform(Object root, Transform? target, Object? source, ICollection<Object?> references)
+        {
+            if (target == null)
+                return;
+
+            bool isInAvatar = false;
+            while (target != target.root)
+            {
+                target = target.parent;
+                if (target != root)
+                    continue;
+                    
+                isInAvatar = true;
+                break;
+            }
+                
+            if (isInAvatar)
+                return;
+                
+            references.Add(source);
         }
     }
 }

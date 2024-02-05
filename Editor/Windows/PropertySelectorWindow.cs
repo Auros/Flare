@@ -52,10 +52,10 @@ namespace Flare.Editor.Windows
 
         private void CreateSelector(VisualElement root, SerializedProperty property)
         {
-            if (Selection.activeObject is not GameObject gameObject)
+            if (property.serializedObject.targetObject is not FlareControl flareCOntrol)
                 return;
 
-            var descriptor = gameObject.GetComponentInParent<VRC_AvatarDescriptor>();
+            var descriptor = flareCOntrol.GetComponentInParent<VRC_AvatarDescriptor>();
             if (!descriptor)
                 return;
 

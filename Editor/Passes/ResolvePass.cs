@@ -1,4 +1,7 @@
-﻿using nadena.dev.ndmf;
+﻿using System.Linq;
+using Flare.Models;
+using nadena.dev.ndmf;
+using VRC.SDK3.Avatars.Components;
 
 namespace Flare.Editor.Passes
 {
@@ -23,8 +26,36 @@ namespace Flare.Editor.Passes
                 
                 switch (module)
                 {
-                    case FlareControl control:
-                        flare.AddControl(control);
+                    case FlareControl control:                
+                        // Disqualify controls with objects references not on the avatar.
+                        var invalidRefs = control.ObjectToggleCollection.Toggles.Any(t =>
+                        {
+                            var target = t.GetTargetTransform();
+                            if (target == null)
+                                return false;
+
+                            return target.GetComponentInParent<VRCAvatarDescriptor>() != context.AvatarDescriptor;
+                        });
+
+                        if (!invalidRefs)
+                        {
+                            invalidRefs = control.PropertyGroupCollection.Groups.Any(g =>
+                            {
+                                var refs = g.SelectionType is PropertySelectionType.Normal
+                                    ? g.Inclusions
+                                    : g.Exclusions;
+
+                                foreach (var obj in refs)
+                                    if (obj != null && obj.GetComponentInParent<VRCAvatarDescriptor>() != context.AvatarDescriptor)
+                                        return true;
+
+                                return false;
+                            });
+                        }
+
+                        if (!invalidRefs)
+                            flare.AddControl(control);
+                        
                         break;
                     case FlareTags tags:
                         flare.AddTags(tags);

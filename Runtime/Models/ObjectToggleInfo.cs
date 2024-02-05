@@ -32,5 +32,15 @@ namespace Flare.Models
                 Target = null;
             }
         }
+
+        public Transform? GetTargetTransform()
+        {
+            return Target switch
+            {
+                GameObject go => go.transform,
+                Component component => component.transform,
+                _ => null
+            };
+        }
     }
 }
