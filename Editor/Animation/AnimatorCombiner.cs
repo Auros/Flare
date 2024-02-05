@@ -211,7 +211,7 @@ namespace Flare.Editor.Animation
             var newLayer = new AnimatorControllerLayer
             {
                 name = layer.name,
-                avatarMask = layer.avatarMask, // TODO map transforms
+                avatarMask = layer.avatarMask,
                 blendingMode = layer.blendingMode,
                 defaultWeight = first ? 1 : layer.defaultWeight,
                 syncedLayerIndex = layer.syncedLayerIndex,
@@ -340,7 +340,6 @@ namespace Flare.Editor.Animation
             {
                 case VRCAnimatorLayerControl layerControl:
                 {
-                    // TODO - need to figure out how to handle cross-layer references. For now this will handle
                     // intra-animator cases.
                     layerControl.layer += _controllerBaseLayer;
                     break;
