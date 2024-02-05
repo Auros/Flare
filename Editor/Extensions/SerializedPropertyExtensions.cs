@@ -32,7 +32,7 @@ namespace Flare.Editor.Editor.Extensions
 
     // Provide simple value get/set methods for SerializedProperty.  Can be used with
     // any data types and with arbitrarily deeply-pathed properties.
-    public static class SerializedPropertyExtensions
+    internal static class SerializedPropertyExtensions
     {
         /// (Extension) Get the value of the serialized property.
         public static object? GetValue(this SerializedProperty property)

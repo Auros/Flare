@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Flare.Editor.Passes
 {
-    public class CleansePass : Pass<CleansePass>
+    internal class CleansePass : Pass<CleansePass>
     {
         public override string DisplayName => "Remove Flare Components";
 

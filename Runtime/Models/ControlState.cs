@@ -2,7 +2,7 @@
 
 namespace Flare.Models
 {
-    public enum ControlState
+    internal enum ControlState
     {
         [InspectorName("When Active")]
         Enabled,

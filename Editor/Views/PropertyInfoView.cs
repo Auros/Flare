@@ -2,7 +2,7 @@
 
 namespace Flare.Editor.Views
 {
-    public class PropertyInfoView : IView
+    internal class PropertyInfoView : IView
     {
         public void Build(VisualElement root)
         {

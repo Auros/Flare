@@ -5,7 +5,7 @@ using VRC.SDK3.Dynamics.PhysBone.Components;
 namespace Flare.Models
 {
     [Serializable]
-    public class PhysBoneInfo
+    internal class PhysBoneInfo
     {
         [field: SerializeField]
         public VRCPhysBone PhysBone { get; private set; } = null!;

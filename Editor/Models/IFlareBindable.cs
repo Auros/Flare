@@ -2,7 +2,7 @@
 
 namespace Flare.Editor.Models
 {
-    public interface IFlareBindable
+    internal interface IFlareBindable
     {
         void SetBinding(SerializedProperty property);
     }

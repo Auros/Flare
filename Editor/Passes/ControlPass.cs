@@ -8,7 +8,7 @@ using Random = System.Random;
 
 namespace Flare.Editor.Passes
 {
-    public class ControlPass : Pass<ControlPass>
+    internal class ControlPass : Pass<ControlPass>
     {
         private readonly Random _random = new();
         

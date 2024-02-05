@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Elements
 {
-    public class TagRuleElement : VisualElement, IFlareBindable
+    internal class TagRuleElement : VisualElement, IFlareBindable
     {
         private readonly PaneMenu _paneMenu;
         private readonly EnumField _causeStateField;

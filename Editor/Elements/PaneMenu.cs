@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Elements
 {
-    public class PaneMenu : VisualElement
+    internal class PaneMenu : VisualElement
     {
         private static Texture2D? _paneOptionsImage;
         private Action<ContextualMenuPopulateEvent>? _populator;

@@ -1,6 +1,6 @@
 ﻿namespace Flare.Models
 {
-    public enum PropertyColorType
+    internal enum PropertyColorType
     {
         None,
         RGB,

@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Views
 {
-    public class TagInfoView : IView
+    internal class TagInfoView : IView
     {
         private const string _helpText = "Tags allow you to trigger many controls at once using a simple rule system. When a tag is enabled or disabled, a rule can be triggered which causes controls of another tag to be activated/deactivated. Create new tags in the Flare Tag Module";
 

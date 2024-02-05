@@ -14,7 +14,7 @@ namespace Flare.Editor.Elements
     /// <summary>
     /// Like a <see cref="PropertyField"/>, but scoped to <see cref="PropertyValueType"/>
     /// </summary>
-    public class CombinatoryFieldElement : VisualElement, IFlareBindable
+    internal class CombinatoryFieldElement : VisualElement, IFlareBindable
     {
         private readonly Slider _slider;
         private readonly Toggle _toggle;

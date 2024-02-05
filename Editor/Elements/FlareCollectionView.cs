@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Elements
 {
-    public class FlareCollectionView<T> : VisualElement, IFlareBindable where T : VisualElement, IFlareBindable
+    internal class FlareCollectionView<T> : VisualElement, IFlareBindable where T : VisualElement, IFlareBindable
     {
         private readonly Func<T> _builder;
         private readonly VisualElement _container;

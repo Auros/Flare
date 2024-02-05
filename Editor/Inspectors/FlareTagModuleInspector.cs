@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 namespace Flare.Editor.Inspectors
 {
     [CustomEditor(typeof(FlareTags))]
-    public class FlareTagModuleInspector : FlareInspector
+    internal class FlareTagModuleInspector : FlareInspector
     {
         [PropertyName(nameof(FlareTags.Rules))]
         private readonly SerializedProperty _rulesProperty = null!;

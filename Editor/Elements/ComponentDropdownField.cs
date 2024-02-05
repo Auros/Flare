@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 namespace Flare.Editor.Elements
 {
     // UI Toolkit binding :woozy_face:
-    public class ComponentDropdownField : PopupField<Object>
+    internal class ComponentDropdownField : PopupField<Object>
     {
         public ComponentDropdownField(GameObject? gameObject) : base(
             gameObject.AsNullable()?.GetComponents<Component>()?.Select(c => (Object)c).ToList() ?? new List<Object>(0),

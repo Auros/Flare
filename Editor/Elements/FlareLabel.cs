@@ -6,7 +6,7 @@ namespace Flare.Editor.Elements
     /// <summary>
     /// Custom label entirely dedicated to fixing UI Toolkit tooltips
     /// </summary>
-    public class FlareLabel : Label
+    internal class FlareLabel : Label
     {
         public FlareLabel(string text) : base(text)
         {

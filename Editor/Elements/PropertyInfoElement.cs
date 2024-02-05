@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Elements
 {
-    public class PropertyInfoElement : VisualElement, IFlareBindable
+    internal class PropertyInfoElement : VisualElement, IFlareBindable
     {
         private readonly Label _nameLabel;
         private readonly PaneMenu _paneMenu;

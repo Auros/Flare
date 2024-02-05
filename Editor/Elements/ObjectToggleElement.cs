@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace Flare.Editor.Elements
 {
-    public class ObjectToggleElement : VisualElement
+    internal class ObjectToggleElement : VisualElement
     {
         private readonly PaneMenu _paneMenu;
         private readonly ObjectField _objectField;

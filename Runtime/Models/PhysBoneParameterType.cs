@@ -1,6 +1,6 @@
 ﻿namespace Flare.Models
 {
-    public enum PhysBoneParameterType
+    internal enum PhysBoneParameterType
     {
         Stretch,
         Squish,

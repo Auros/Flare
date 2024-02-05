@@ -7,7 +7,6 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
-using VRC.Core.Pool;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Flare.Editor.Passes
@@ -15,7 +14,7 @@ namespace Flare.Editor.Passes
     /// <summary>
     /// Converts control data into corresponding control containers.
     /// </summary>
-    public class ContainerizationPass : Pass<ContainerizationPass>
+    internal class ContainerizationPass : Pass<ContainerizationPass>
     {
         protected override void Execute(BuildContext context)
         {

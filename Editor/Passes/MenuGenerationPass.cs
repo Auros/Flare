@@ -6,7 +6,7 @@ using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Flare.Editor.Passes
 {
-    public class MenuGenerationPass : Pass<MenuGenerationPass>
+    internal class MenuGenerationPass : Pass<MenuGenerationPass>
     {
         public override string DisplayName => "Expression Menu Generator";
 

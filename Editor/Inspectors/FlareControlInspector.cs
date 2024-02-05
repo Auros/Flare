@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 namespace Flare.Editor.Inspectors
 {
     [CustomEditor(typeof(FlareControl))]
-    public class FlareControlInspector : FlareInspector
+    internal class FlareControlInspector : FlareInspector
     {
         [PropertyName(nameof(FlareControl.Type))]
         private readonly SerializedProperty _typeProperty = null!;

@@ -9,7 +9,7 @@ using VRC.SDKBase;
 namespace Flare.Editor.Drawers
 {
     [CustomPropertyDrawer(typeof(FlareTag))]
-    public class FlareTagPropertyDrawer : PropertyDrawer
+    internal class FlareTagPropertyDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {

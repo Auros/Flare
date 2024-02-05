@@ -1,6 +1,6 @@
 ﻿namespace Flare.Models
 {
-    public enum PropertyValueType
+    internal enum PropertyValueType
     {
         Boolean,
         Integer,

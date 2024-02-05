@@ -1,6 +1,6 @@
 ﻿namespace UnityEditor
 {
-    public static class EditorExtensions
+    internal static class EditorExtensions
     {
         public static SerializedProperty? Field(this SerializedObject serializedObject, string fieldName)
         {

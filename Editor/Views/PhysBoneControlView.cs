@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Views
 {
-    public class PhysBoneControlView : IView
+    internal class PhysBoneControlView : IView
     {
         [PropertyName(nameof(PhysBoneInfo.PhysBone))]
         private readonly SerializedProperty _physBoneProperty = null!;

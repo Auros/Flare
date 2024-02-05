@@ -1,6 +1,6 @@
 ﻿namespace Flare.Editor.Models
 {
-    public enum FlarePropertySource
+    internal enum FlarePropertySource
     {
         None,
         Material,

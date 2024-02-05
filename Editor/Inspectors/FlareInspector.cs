@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Inspectors
 {
-    public abstract class FlareInspector : UnityEditor.Editor
+    internal abstract class FlareInspector : UnityEditor.Editor
     {
         private static readonly Dictionary<Type, FieldInfo[]> _fieldInfoCache = new();
 

@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Views
 {
-    public class PropertyGroupCollectionView : IView
+    internal class PropertyGroupCollectionView : IView
     {
         [PropertyName(nameof(PropertyGroupCollectionInfo.Groups))]
         private readonly PropertyGroupView _propertyGroupView = new();

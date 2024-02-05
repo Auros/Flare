@@ -2,7 +2,7 @@
 
 namespace Flare.Editor.Models
 {
-    public class AnimatableBinaryProperty
+    internal class AnimatableBinaryProperty
     {
         public Type Type { get; }
         

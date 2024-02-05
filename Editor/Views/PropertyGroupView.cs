@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Views
 {
-    public class PropertyGroupView : IView
+    internal class PropertyGroupView : IView
     {
         [PropertyName("Array")]
         private readonly SerializedProperty _arrayProperty = null!;

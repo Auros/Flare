@@ -15,11 +15,11 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using BuildContext = nadena.dev.ndmf.BuildContext;
+using UnityObject = UnityEngine.Object;
 
 // https://github.com/bdunderscore/modular-avatar/blob/6dcea7fa5eaacc66a3500ab36ddcdbbb52abd836/Editor/Animation/DeepClone.cs
 namespace Flare.Editor.Animation
 {
-    using UnityObject = UnityEngine.Object;
 
     internal class DeepClone
     {
