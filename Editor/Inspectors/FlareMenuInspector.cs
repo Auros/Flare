@@ -16,9 +16,9 @@ namespace Flare.Editor.Inspectors
         
         private void OnEnable()
         {
-            _menuNameProperty = serializedObject.FindProperty("_menuName");
-            _menuIconProperty = serializedObject.FindProperty("_menuIcon");
-            _synchronizationProperty = serializedObject.FindProperty("_synchronizeNameWithGameObject");
+            _menuNameProperty = serializedObject.Property(nameof(FlareMenu.Name));
+            _menuIconProperty = serializedObject.Property(nameof(FlareMenu.Icon));
+            _synchronizationProperty = serializedObject.Property(nameof(FlareMenu.Synchronize));
         }
 
         public override VisualElement CreateInspectorGUI()

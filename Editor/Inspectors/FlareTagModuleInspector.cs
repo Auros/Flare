@@ -10,13 +10,13 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Inspectors
 {
-    [CustomEditor(typeof(FlareTagModule))]
+    [CustomEditor(typeof(FlareTags))]
     public class FlareTagModuleInspector : FlareInspector
     {
-        [PropertyName(nameof(FlareTagModule.Rules))]
+        [PropertyName(nameof(FlareTags.Rules))]
         private readonly SerializedProperty _rulesProperty = null!;
         
-        [PropertyName(nameof(FlareTagModule.Tags))]
+        [PropertyName(nameof(FlareTags.Tags))]
         private readonly SerializedProperty _layersProperty = null!;
         
         protected override VisualElement BuildUI(VisualElement root)
@@ -27,7 +27,7 @@ namespace Flare.Editor.Inspectors
 
             CategoricalFoldout rulesFoldout = new() { text = "Rules" };
 
-            var module = (target as FlareTagModule)!;
+            var module = (target as FlareTags)!;
 
             BuildRulesUI(rulesFoldout, module);
             
@@ -58,7 +58,7 @@ namespace Flare.Editor.Inspectors
             return root;
         }
 
-        private void BuildRulesUI(VisualElement root, FlareTagModule module)
+        private void BuildRulesUI(VisualElement root, FlareTags module)
         {
             var rulesArrayProperty = _rulesProperty.Field("Array")!;
             FlareCollectionView<TagRuleElement> rules = new(() =>

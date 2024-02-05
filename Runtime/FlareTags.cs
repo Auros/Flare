@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Flare
 {
-    internal class FlareTagModule : FlareModule
+    internal class FlareTags : FlareModule
     {
         [field: SerializeField]
         public string[] Tags { get; private set; } = Array.Empty<string>();

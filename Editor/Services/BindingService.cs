@@ -47,6 +47,12 @@ namespace Flare.Editor.Services
             return (T)GetPropertyValue(property);
         }
 
+        public float GetPropertyValue(FlarePseudoProperty property)
+        {
+            _ = AnimationUtility.GetFloatValue(_root, property.Binding, out var pseudoDefault);
+            return pseudoDefault;
+        }
+
         public object GetPropertyValue(FlareProperty property)
         {
             float GetFloatValue(FlareProperty prop)
@@ -81,8 +87,8 @@ namespace Flare.Editor.Services
                 PropertyValueType.Boolean => GetFloatValue(property) > 0,
                 PropertyValueType.Integer => GetIntValue(property),
                 PropertyValueType.Float => GetFloatValue(property),
-                PropertyValueType.Vector2 => (Vector2)GetVectorValue(property),
-                PropertyValueType.Vector3 => (Vector3)GetVectorValue(property),
+                PropertyValueType.Vector2 => GetVectorValue(property),
+                PropertyValueType.Vector3 => GetVectorValue(property),
                 PropertyValueType.Vector4 => GetVectorValue(property),
                 _ => throw new ArgumentOutOfRangeException()
             };

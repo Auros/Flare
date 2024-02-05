@@ -6,25 +6,19 @@ namespace Flare
     [DisallowMultipleComponent]
     internal class FlareMenu : FlareModule
     {   
-        [SerializeField]
-        private string _menuName = string.Empty;
+        [field: SerializeField]
+        public string Name { get; private set; } = string.Empty;
 
-        [SerializeField]
-        private Texture2D _menuIcon = null!;
+        [field: SerializeField]
+        public Texture2D Icon { get; private set; } = null!;
 
-        [SerializeField]
-        private bool _synchronizeNameWithGameObject = true;
+        [field: SerializeField]
+        public bool Synchronize { get; private set; } = true;
         
-        public string Name => _menuName;
-
-        public Texture2D Icon => _menuIcon;
-
-        public bool Synchronize => _synchronizeNameWithGameObject;
-
         public void SetName(string newName)
         {
             name = newName; 
-            _menuName = newName;
+            Name = newName;
         }
   
         private void OnValidate()
@@ -33,7 +27,7 @@ namespace Flare
             
             // Only update the name if synchronization is on
             // and if the names aren't matching.
-            if (!_synchronizeNameWithGameObject || name == _menuName)
+            if (!Synchronize || name == Name)
                 return;
 
             SetName(name);

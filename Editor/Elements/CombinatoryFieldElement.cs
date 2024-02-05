@@ -122,6 +122,7 @@ namespace Flare.Editor.Elements
                 element.Unbind();
                 element.Visible(target == element);
             }
+            _slider.SetEnabled(false);
 
             var nameProperty = property.Property(nameof(PropertyInfo.Name));
             var pathProperty = property.Property(nameof(PropertyInfo.Path));
@@ -220,12 +221,27 @@ namespace Flare.Editor.Elements
                     {
                         var defaultFloatValue = getAnalog(prop);
                         floatField.value = defaultFloatValue;
-                        _slider.Visible(defaultFloatValue is >= 0 and <= 1f && enabledSelf);
+
+                        var shouldBeEnabled = defaultFloatValue is >= 0 and <= 1f && enabledSelf;
+                        _slider.SetEnabled(shouldBeEnabled);
+                        _slider.Visible(shouldBeEnabled);
                     });
-                    _slider.BindProperty(analogProperty);
                     var defaultValue = getAnalog(analogProperty);
                     floatField.value = defaultValue;
-                    _slider.Visible(defaultValue is >= 0 and <= 1f && enabledSelf);
+                    
+                    var shouldBeEnabled = defaultValue is >= 0 and <= 1f && enabledSelf;
+                    _slider.SetEnabled(shouldBeEnabled);
+                    _slider.Visible(shouldBeEnabled);
+                    _slider.RegisterValueChangedCallback(evt =>
+                    {
+                        var should = evt.newValue is >= 0 and <= 1f && enabledSelf;
+                        _slider.Visible(should);
+
+                        if (!should)
+                            return;
+                        
+                        _floatChange.Invoke(evt);
+                    });
                     break;
                 case Vector2Field v2Field:
                     v2Field.UnregisterValueChangedCallback(_vector2Change);

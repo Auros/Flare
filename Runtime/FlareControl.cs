@@ -10,6 +10,9 @@ namespace Flare
         public ControlType Type { get; private set; }
 
         [field: SerializeField]
+        public InterpolationInfo Interpolation { get; private set; } = new();
+
+        [field: SerializeField]
         public MenuItemInfo MenuItem { get; private set; } = new();
 
         [field: SerializeField]

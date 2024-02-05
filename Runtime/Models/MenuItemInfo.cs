@@ -10,7 +10,7 @@ namespace Flare.Models
         public string Name { get; set; } = string.Empty;
 
         [field: SerializeField]
-        public Texture Icon { get; private set; } = null!;
+        public Texture2D Icon { get; private set; } = null!;
 
         [field: SerializeField]
         public MenuItemType Type { get; private set; } = MenuItemType.Toggle;

@@ -149,10 +149,7 @@ namespace Flare.Editor.Windows
                                 defaultValue = boolValue ? 1f : 0f;
 
                             if (defaultValue is Vector4 or Vector3 or Vector2)
-                            {
-                                _ = AnimationUtility.GetFloatValue(avatarGameObject, pseudoProperty!.Binding, out var pseudoDefault);
-                                defaultValue = pseudoDefault;
-                            }
+                                defaultValue = binder.GetPropertyValue(pseudoProperty!);
                             
                             defaultValue = (float)defaultValue;
                             property.Property(nameof(PropertyInfo.Analog)).SetValue(defaultValue);

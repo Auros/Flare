@@ -37,7 +37,7 @@ namespace Flare.Editor.Views
         {
             PropertyGroupElement root = new();
 
-            root.WithBackgroundColor(FlareUI.BackgroundColor)
+            root
                 .WithBorderColor(FlareUI.BorderColor)
                 .WithBorderRadius(3f)
                 .WithBorderWidth(1f)

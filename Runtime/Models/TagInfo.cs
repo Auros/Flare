@@ -8,7 +8,7 @@ namespace Flare.Models
     internal class TagInfo
     {
         [field: SerializeField]
-        public FlareTagModule? Module { get; private set; }
+        public FlareTags? Module { get; private set; }
         
         [field: SerializeField]
         public FlareTag[] Tags { get; private set; } = Array.Empty<FlareTag>();
@@ -22,13 +22,13 @@ namespace Flare.Models
             if (!descriptor)
                 return false;
 
-            var layerModule = descriptor.GetComponentInChildren<FlareTagModule>();
+            var layerModule = descriptor.GetComponentInChildren<FlareTags>();
             if (layerModule)
                 return true;
 
             GameObject module = new("Flare Tag Module");
             module.transform.SetParent(descriptor.transform);
-            Module = module.AddComponent<FlareTagModule>();
+            Module = module.AddComponent<FlareTags>();
             
             var moduleTransform = module.transform;
             moduleTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
