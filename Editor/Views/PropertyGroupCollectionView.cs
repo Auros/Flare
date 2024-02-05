@@ -13,7 +13,7 @@ namespace Flare.Editor.Views
         public void Build(VisualElement root)
         {
             _propertyGroupView.Build(root);
-            root.CreateHorizontalSpacer(5f);
+            root.CreateHorizontalSpacer(20f);
         }
     }
 }

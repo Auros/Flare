@@ -5,15 +5,20 @@ using UnityEngine.UIElements;
 
 namespace Flare.Editor.Views
 {
-    public class ObjectToggleCollectionView : IView
+    internal class ObjectToggleCollectionView : IView
     {
         [PropertyName(nameof(ObjectToggleCollectionInfo.Toggles))]
-        private readonly ObjectToggleView _objectToggleView = new();
+        private readonly ObjectToggleView _objectToggleView;
+
+        public ObjectToggleCollectionView(FlareControl flareControl)
+        {
+            _objectToggleView = new ObjectToggleView(flareControl);
+        }
         
         public void Build(VisualElement root)
         {
             _objectToggleView.Build(root);
-            root.CreateHorizontalSpacer(5f);
+            root.CreateHorizontalSpacer(20f);
         }
     }
 }

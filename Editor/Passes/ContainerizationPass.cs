@@ -4,7 +4,10 @@ using Flare.Editor.Models;
 using Flare.Editor.Services;
 using Flare.Models;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Pool;
+using VRC.Core.Pool;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Flare.Editor.Passes
@@ -72,26 +75,16 @@ namespace Flare.Editor.Passes
                 foreach (var group in control.PropertyGroupCollection.Groups)
                 {
                     var root = context.AvatarRootObject;
+                    
+                    // ReSharper disable once ConvertIfStatementToSwitchStatement
                     if (group.SelectionType is PropertySelectionType.Normal)
                     {
                         // This could be more optimized, but for now I'll leave it like this for simplicity (I'm tired.)
                         var include = group.Inclusions;
                         BindingService binder = new(root, include);
-                        var bindings = binder.GetPropertyBindings().Where(b => b.GameObject != root).ToArray();
-                        
                         foreach (var prop in group.Properties)
                         {
-                            foreach (var animatable in bindings)
-                            {
-                                if (animatable.Type != prop.ValueType
-                                    || animatable.Name != prop.Name
-                                    || animatable.Path != prop.Path
-                                    || animatable.ContextType.AssemblyQualifiedName != prop.ContextType)
-                                    continue;
-                                
-                                // We found our property
-                                BindPropertyToAnimatable(controlContext, binder, prop, animatable);
-                            }
+                            BindAnimatablePropertiesFast(controlContext, binder, prop);
                         }
 
                     }
@@ -100,7 +93,7 @@ namespace Flare.Editor.Passes
                         var exclude = group.Exclusions;
                         
                         BindingService binder = new(root, exclude, typeof(Renderer), typeof(VRCPhysBone));
-                        var bindings = binder.GetPropertyBindings()
+                        var bindings = binder.GetPropertyBindings(group.Properties, false)
                             .Where(b => b.GameObject != root)
                             .ToLookup(k => k.Name);
 
@@ -117,6 +110,99 @@ namespace Flare.Editor.Passes
                         }
                     }
                 }
+            }
+        }
+
+        // I needed this to be faster so I couldn't directly use the BindingService to get the properties.
+        private static void BindAnimatablePropertiesFast(ControlContext controlContext, BindingService binder, PropertyInfo prop)
+        {
+            var type = Type.GetType(prop.ContextType);
+            if (type == null)
+            {
+                // MAYBE: Warn?
+                return;
+            }
+            
+            // ReSharper disable once ConvertIfStatementToSwitchStatement
+            if (prop.ValueType is PropertyValueType.Float or PropertyValueType.Boolean or PropertyValueType.Integer)
+            {
+                FlarePseudoProperty pseudoProperty = new(type, null!, new EditorCurveBinding
+                {
+                    type = type,
+                    path = prop.Path,
+                    propertyName = prop.Name
+                });
+                
+                FlareProperty flareProperty = new(
+                    prop.Name,
+                    prop.Path,
+                    type,
+                    prop.ValueType,
+                    prop.ColorType,
+                    FlarePropertySource.None,
+                    null!,
+                    pseudoProperty,
+                    null
+                );
+                
+                BindPropertyToAnimatable(controlContext, binder, prop, flareProperty);
+            }
+            else if (prop.ValueType is PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4)
+            {
+                var pseudoProperties = ListPool<FlarePseudoProperty>.Get();
+
+                // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
+                var iter = prop.ValueType switch
+                {
+                    PropertyValueType.Vector2 => 2,
+                    PropertyValueType.Vector3 => 3,
+                    PropertyValueType.Vector4 => 4,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                    
+                for (int i = 0; i < iter; i++)
+                {
+                    var isColor = prop.ColorType is PropertyColorType.RGB;
+                    var primaryTarget = isColor ? ".r" : ".x";
+                    var secondaryTarget = isColor ? ".g" : ".y";
+                    var tertiaryTarget = isColor ? ".b" : ".z";
+                    var quaternaryTarget = isColor ? ".a" : ".w";
+
+                    var target = i switch
+                    {
+                        0 => primaryTarget,
+                        1 => secondaryTarget,
+                        2 => tertiaryTarget,
+                        3 => quaternaryTarget,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    
+                    pseudoProperties.Add(new FlarePseudoProperty(
+                        typeof(float),
+                        null!,
+                        new EditorCurveBinding
+                        {
+                            type = type,
+                            path = prop.Path,
+                            propertyName = $"{prop.Name}{target}"
+                        }
+                    ));
+                }
+                
+                FlareProperty flareProperty = new(
+                    prop.Name,
+                    prop.Path,
+                    type,
+                    prop.ValueType,
+                    prop.ColorType,
+                    FlarePropertySource.None,
+                    null!,
+                    null!,
+                    pseudoProperties
+                );
+                
+                BindPropertyToAnimatable(controlContext, binder, prop, flareProperty);
+                ListPool<FlarePseudoProperty>.Release(pseudoProperties);
             }
         }
 
@@ -204,18 +290,18 @@ namespace Flare.Editor.Passes
                 case PropertyValueType.Float or PropertyValueType.Boolean or PropertyValueType.Integer:
                 {
                     var inverseValue = prop.Analog;
-                    CreateAnimatableFloatProperty(animatable.PseudoProperties[0], inverseValue);
+                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), inverseValue);
                     break;
                 }
                 case PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4:
                 {
                     // Need to convert each individual property for vectors to floats
-                    CreateAnimatableFloatProperty(animatable.PseudoProperties[0], prop.Vector[0]); // Guaranteed
-                    CreateAnimatableFloatProperty(animatable.PseudoProperties[1], prop.Vector[1]); // Guaranteed
+                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), prop.Vector[0]); // Guaranteed
+                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(1), prop.Vector[1]); // Guaranteed
                     if (animatable.Type is PropertyValueType.Vector3 or PropertyValueType.Vector4)
-                        CreateAnimatableFloatProperty(animatable.PseudoProperties[2], prop.Vector[2]);
+                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(2), prop.Vector[2]);
                     if (animatable.Type is PropertyValueType.Vector4)
-                        CreateAnimatableFloatProperty(animatable.PseudoProperties[3], prop.Vector[3]);
+                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(3), prop.Vector[3]);
                     break;
                 }
             }

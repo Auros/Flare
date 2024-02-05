@@ -130,6 +130,25 @@ namespace Flare.Editor.Elements
             _menuModeField.Unbind();
             _toggleModeField.Unbind();
             _componentDropdownField.Unbind();
+
+            _objectField.RegisterValueChangedCallback(evt =>
+            {
+                if (evt.previousValue != null || evt.newValue == null)
+                    return;
+
+                bool? value = evt.newValue switch
+                {
+                    GameObject go => go.activeSelf,
+                    Behaviour behaviour => behaviour.enabled,
+                    Renderer renderer => renderer.enabled,
+                    _ => null
+                };
+
+                if (!value.HasValue)
+                    return;
+                
+                _toggleModeField.value = value.Value ? ToggleMode.Disabled : ToggleMode.Enabled;
+            });
             
             _objectField.BindProperty(property.Property(nameof(ObjectToggleInfo.Target)));
             _menuModeField.BindProperty(property.Property(nameof(ObjectToggleInfo.MenuMode)));

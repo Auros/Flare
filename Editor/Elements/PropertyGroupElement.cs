@@ -57,7 +57,7 @@ namespace Flare.Editor.Elements
             {
                 if (_propertiesProperty is null)
                     return;
-                
+
                 var index = _propertiesProperty.arraySize++;
                 _propertiesProperty.serializedObject.ApplyModifiedProperties();
                 _propertiesProperty.GetArrayElementAtIndex(index).SetValue(new PropertyInfo()); // Create new prop info.

@@ -1,4 +1,5 @@
-﻿using Flare.Editor.Attributes;
+﻿using System;
+using Flare.Editor.Attributes;
 using Flare.Editor.Editor.Extensions;
 using Flare.Editor.Elements;
 using Flare.Editor.Extensions;
@@ -16,6 +17,13 @@ namespace Flare.Editor.Views
         
         [PropertyName("Array.size")]
         private readonly SerializedProperty _arraySizeProperty = null!;
+
+        private readonly FlareControl _flareControl;
+        
+        public ObjectToggleView(FlareControl flareControl)
+        {
+            _flareControl = flareControl;
+        }
         
         public void Build(VisualElement root)
         {
@@ -26,7 +34,28 @@ namespace Flare.Editor.Views
             {
                 var index = _arrayProperty.arraySize++;
                 _arrayProperty.serializedObject.ApplyModifiedProperties();
-                _arrayProperty.GetArrayElementAtIndex(index).SetValue(new ObjectToggleInfo()); // Create a new toggle.
+                
+                ObjectToggleInfo info = new();
+                
+                // For menus, we seed some initial values to assume what the user wants.
+                if (_flareControl.Type is ControlType.Menu)
+                {
+                    var menuItem = _flareControl.MenuItem;
+                    var state = menuItem.Type switch
+                    {
+                        MenuItemType.Button => ToggleMode.Enabled,
+                        MenuItemType.Toggle => menuItem.DefaultState ? ToggleMode.Disabled : ToggleMode.Enabled,
+                        MenuItemType.Radial => menuItem.DefaultRadialValue >= 0.5f ? ToggleMode.Disabled : ToggleMode.Enabled,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    info.MenuMode = state;
+                }
+                else
+                {
+                    info.MenuMode = ToggleMode.Enabled;
+                }
+                
+                _arrayProperty.GetArrayElementAtIndex(index).SetValue(info);
             });
         }
 

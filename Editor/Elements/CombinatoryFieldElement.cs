@@ -217,29 +217,36 @@ namespace Flare.Editor.Elements
                     floatField.UnregisterValueChangedCallback(_floatChange);
                     _floatChange = evt => analogProperty.SetValue(evt.newValue);
                     floatField.RegisterValueChangedCallback(_floatChange);
+
+                    var isBlendShape = nameProperty.stringValue.StartsWith("blendShape.");
+                    var maxSliderValue = isBlendShape ? 100f : 1f;
+                    _slider.highValue = maxSliderValue;
+                    
                     floatField.TrackPropertyValue(analogProperty, prop =>
                     {
                         var defaultFloatValue = getAnalog(prop);
                         floatField.value = defaultFloatValue;
 
-                        var shouldBeEnabled = defaultFloatValue is >= 0 and <= 1f && enabledSelf;
+                        var shouldBeEnabled = defaultFloatValue >= 0 && defaultFloatValue <= maxSliderValue && enabledSelf;
                         _slider.SetEnabled(shouldBeEnabled);
                         _slider.Visible(shouldBeEnabled);
+                        _slider.value = defaultFloatValue;
                     });
                     var defaultValue = getAnalog(analogProperty);
                     floatField.value = defaultValue;
                     
-                    var shouldBeEnabled = defaultValue is >= 0 and <= 1f && enabledSelf;
+                    var shouldBeEnabled = defaultValue >= 0 && defaultValue <= maxSliderValue && enabledSelf;
                     _slider.SetEnabled(shouldBeEnabled);
                     _slider.Visible(shouldBeEnabled);
+                    _slider.value = defaultValue;
                     _slider.RegisterValueChangedCallback(evt =>
                     {
-                        var should = evt.newValue is >= 0 and <= 1f && enabledSelf;
+                        var should = evt.newValue >= 0 && evt.newValue <= maxSliderValue && enabledSelf;
                         _slider.Visible(should);
 
                         if (!should)
                             return;
-                        
+
                         _floatChange.Invoke(evt);
                     });
                     break;

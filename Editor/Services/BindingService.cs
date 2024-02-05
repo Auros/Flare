@@ -13,7 +13,8 @@ namespace Flare.Editor.Services
         private readonly Type[] _types;
         private readonly GameObject _root;
         private readonly GameObject[] _gameObjects;
-        private bool _gameObjectSearch;
+        private readonly Dictionary<Type, string> _assemblyQualifiedNames = new();
+        private readonly bool _gameObjectSearch;
         
         /// <summary>
         /// Creates a binding service from the provided root that scans for property bindings recursively if
@@ -57,13 +58,13 @@ namespace Flare.Editor.Services
         {
             float GetFloatValue(FlareProperty prop)
             {
-                _ = AnimationUtility.GetFloatValue(_root, prop.PseudoProperties[0].Binding, out var value);
+                _ = AnimationUtility.GetFloatValue(_root, prop.GetPseudoProperty(0).Binding, out var value);
                 return value;
             }
             
             int GetIntValue(FlareProperty prop)
             {
-                _ = AnimationUtility.GetDiscreteIntValue(_root, prop.PseudoProperties[0].Binding, out var value);
+                _ = AnimationUtility.GetDiscreteIntValue(_root, prop.GetPseudoProperty(0).Binding, out var value);
                 return value;
             }
 
@@ -73,9 +74,9 @@ namespace Flare.Editor.Services
                     _ = true;
                 
                 var value = Vector4.zero;
-                for (int i = 0; i < prop.PseudoProperties.Count; i++)
+                for (int i = 0; i < prop.Length; i++)
                 {
-                    _ = AnimationUtility.GetFloatValue(_root, prop.PseudoProperties[i].Binding, out var floatValue);
+                    _ = AnimationUtility.GetFloatValue(_root, prop.GetPseudoProperty(i).Binding, out var floatValue);
                     value[i] = floatValue;
                 }
                 return value;
@@ -96,11 +97,11 @@ namespace Flare.Editor.Services
             return value;
         }
         
-        public IEnumerable<FlareProperty> GetPropertyBindings()
+        public IEnumerable<FlareProperty> GetPropertyBindings(PropertyInfo[]? preSearch = null, bool pathMatch = true)
         {
             GameObject[] objectsToSearch;
             if (_gameObjects.Length is not 0 && _gameObjectSearch)
-                objectsToSearch = _gameObjects.Where(g => g != null).ToArray();
+                objectsToSearch = _gameObjects.Where(g => g).ToArray();
             else if (_types.Length is not 0)
             {
                 objectsToSearch = _types.SelectMany(type =>
@@ -133,8 +134,33 @@ namespace Flare.Editor.Services
                     // In the future we may be able to support others like Materials and such.
                     if (type != typeof(float) && type != typeof(int) && type != typeof(bool))
                         return null;
+
+                    if (preSearch == null)
+                        return new FlarePseudoProperty(type, obj, binding);
                     
-                    return new FlarePseudoProperty(type, obj, binding);
+                    bool exists = false;
+                    foreach (var pre in preSearch)
+                    {
+                        if (pathMatch && string.CompareOrdinal(pre.Path, binding.path) is not 0)
+                            continue;
+
+                        if (!_assemblyQualifiedNames.TryGetValue(binding.type, out var qualifiedName))
+                        {
+                            qualifiedName = binding.type.AssemblyQualifiedName;
+                            _assemblyQualifiedNames[binding.type] = qualifiedName;
+                        }
+                        
+                        if (string.CompareOrdinal(pre.ContextType, qualifiedName) is not 0)
+                            continue;
+                        
+                        if (!binding.propertyName.StartsWith(pre.Name, StringComparison.Ordinal))
+                            continue;
+                            
+                        exists = true;
+                        break;
+                    }
+
+                    return !exists ? null : new FlarePseudoProperty(type, obj, binding);
                 });
             }).Where(property => property is not null).Select(property => property!).ToArray();
             
@@ -168,7 +194,7 @@ namespace Flare.Editor.Services
                     continue;
 
                 // If it's not a color, its a vector :Clueless:
-                var isColor = potential.Name.EndsWith(".r");
+                var isColor = potential.Name[^1] == 'r' && potential.Name[^2] == '.';
 
                 // Remove the .r or .x at the end
                 var baseName = potential.Name[..^2];
@@ -193,19 +219,11 @@ namespace Flare.Editor.Services
                 // actual colors.
                 var color = isColor
                     ? PropertyColorType.RGB
-                    : baseName.Contains("Color") && (!baseName.Contains("HDR") && !baseName.Contains("_ST"))
+                    : baseName.Contains("Color") && !baseName.Contains("HDR") && !baseName.Contains("_ST")
                         ? PropertyColorType.HDR : PropertyColorType.None;
                 
-                if (baseName.Contains("_EmissionColor"))
-                    _ = true;
-                
-                if (type is PropertyValueType.Float)
-                    Debug.LogWarning($"{baseName} is a float ({potential.Name})");
-
                 var propsToInclude = new[] { potential, second, third, fourth }.Where(p => p != null);
 
-                
-                
                 FlareProperty property = new(
                     baseName,
                     potential.Path,
@@ -214,6 +232,7 @@ namespace Flare.Editor.Services
                     color,
                     GetSource(potential),
                     potential.GameObject,
+                    null,
                     propsToInclude.ToArray()
                 );
                 
@@ -252,7 +271,8 @@ namespace Flare.Editor.Services
                     PropertyColorType.None,
                     GetSource(pseudoProperty),
                     pseudoProperty.GameObject,
-                    pseudoProperty
+                    pseudoProperty,
+                    null
                 );
                 
                 properties.Add(property);

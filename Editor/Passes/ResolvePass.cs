@@ -17,6 +17,10 @@ namespace Flare.Editor.Passes
             
             foreach (var module in modules)
             {
+                // Feature: Ignore modules that are disabled.
+                if (!module.isActiveAndEnabled)
+                    continue;
+                
                 switch (module)
                 {
                     case FlareControl control:

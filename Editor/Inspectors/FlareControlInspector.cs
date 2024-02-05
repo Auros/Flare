@@ -28,7 +28,7 @@ namespace Flare.Editor.Inspectors
         private readonly ContactControlView _contactControlView = new();
 
         [PropertyName(nameof(FlareControl.ObjectToggleCollection))]
-        private readonly ObjectToggleCollectionView _objectToggleCollectionView = new();
+        private ObjectToggleCollectionView? _objectToggleCollectionView;
         
         [PropertyName(nameof(FlareControl.PropertyGroupCollection))]
         private readonly PropertyGroupCollectionView _propertyGroupCollectionView = new();
@@ -42,6 +42,7 @@ namespace Flare.Editor.Inspectors
                 return;
             
             _menuItemControlView ??= new MenuItemControlView(control);
+            _objectToggleCollectionView ??= new ObjectToggleCollectionView(control);
         }
 
         protected override VisualElement BuildUI(VisualElement root)
@@ -83,7 +84,7 @@ namespace Flare.Editor.Inspectors
             UpdateFoldout((ControlType)_typeProperty.enumValueIndex);
 
             CategoricalFoldout toggleFoldout = new() { text = "Object Toggles" };
-            _objectToggleCollectionView.Build(toggleFoldout);
+            _objectToggleCollectionView?.Build(toggleFoldout);
             root.Add(toggleFoldout);
 
             CategoricalFoldout propertyFoldout = new() { text = "Property Groups" };

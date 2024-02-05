@@ -6,9 +6,11 @@ namespace Flare.Editor.Models
 {
     internal class FlarePseudoProperty
     {
+        private string? _id;
+        
         // This Id is used to create a unique binding path, especially useful when doing lookups as
         // there can be multiple GameObjects with the same property name within a property search.
-        public string Id { get; }
+        public string Id => _id ??= $"{Path}/{Name}";
         
         public string Path { get; }
         
@@ -30,7 +32,6 @@ namespace Flare.Editor.Models
             ContextType = binding.type;
             Name = binding.propertyName;
             Path = binding.path;
-            Id = $"{Path}/{Name}";
         }
     }
 }

@@ -61,6 +61,7 @@ namespace Flare.Editor.Views
                 UpdateDefaultStateFields((MenuItemType)ctx.changedProperty.enumValueIndex)
             );
             
+            root.CreateHorizontalSpacer(10f);
             return;
 
             void UpdateDefaultStateFields(MenuItemType type)

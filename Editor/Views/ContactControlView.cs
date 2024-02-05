@@ -14,6 +14,7 @@ namespace Flare.Editor.Views
         public void Build(VisualElement root)
         {
             root.CreatePropertyField(_contactProperty);
+            root.CreateHorizontalSpacer(10f);
         }
     }
 }

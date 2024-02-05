@@ -18,6 +18,7 @@ namespace Flare.Editor.Views
         {
             root.CreatePropertyField(_physBoneProperty);
             root.CreatePropertyField(_parameterTypeProperty);
+            root.CreateHorizontalSpacer(10f);
         }
     }
 }

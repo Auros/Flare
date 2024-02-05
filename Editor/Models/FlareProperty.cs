@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Flare.Models;
 using UnityEngine;
 
@@ -8,8 +7,10 @@ namespace Flare.Editor.Models
 {
     internal class FlareProperty
     {
-        public string Id { get; }
-        
+        private string? _id;
+
+        public string Id => _id ??= $"{Path}/{Name}";
+
         public string Name { get; }
         
         public string Path { get; }
@@ -24,10 +25,14 @@ namespace Flare.Editor.Models
         
         public FlarePropertySource Source { get; }
         
-        public IReadOnlyList<FlarePseudoProperty> PseudoProperties { get; }
+        private FlarePseudoProperty PseudoProperty { get; }
+        
+        internal IReadOnlyList<FlarePseudoProperty>? PseudoProperties { get; }
+
+        public int Length => PseudoProperties?.Count ?? 1;
 
         public FlareProperty(string name, string path, Type contextType, PropertyValueType type, PropertyColorType color,
-            FlarePropertySource source, GameObject gameObject, params FlarePseudoProperty[] pseudoProperties)
+            FlarePropertySource source, GameObject gameObject, FlarePseudoProperty? pseudoProperty, IReadOnlyList<FlarePseudoProperty>? pseudoProperties)
         {
             Type = type;
             Name = name;
@@ -36,8 +41,23 @@ namespace Flare.Editor.Models
             Source = source;
             GameObject = gameObject;
             ContextType = contextType;
-            PseudoProperties = pseudoProperties.ToArray();
-            Id = $"{Path}/{Name}";
+
+            PseudoProperty = pseudoProperty!;
+            PseudoProperties = pseudoProperties;
+
+            if (pseudoProperty == null && pseudoProperties != null)
+                PseudoProperty = pseudoProperties[0];
+        }
+
+        public FlarePseudoProperty GetPseudoProperty(int index)
+        {
+            if (index == 0)
+                return PseudoProperty;
+
+            if (PseudoProperties is null)
+                throw new InvalidOperationException($"Cannot find pseudo property with index {index}");
+
+            return PseudoProperties[index];
         }
     }
 }

@@ -104,7 +104,7 @@ namespace Flare.Editor.Windows
 
             var bindings = bindingSearch.ToArray();
             var items = bindings.ToList();
-
+            
             ListView list = new(items, 46f, () => new BindablePropertyCell(), (e, i) =>
             {
                 if (e is not BindablePropertyCell cell)
@@ -119,10 +119,10 @@ namespace Flare.Editor.Windows
                 // ReSharper disable once MoveLocalFunctionAfterJumpStatement
                 void HandlePseudoProperty(int index)
                 {
-                    if (index > binding.PseudoProperties.Count)
+                    if (index > binding.Length)
                         return;
 
-                    var pseudoProperty = binding.PseudoProperties[index];
+                    var pseudoProperty = binding.GetPseudoProperty(index);
                     SetProperty(pseudoProperty);
                 }
 
@@ -139,6 +139,24 @@ namespace Flare.Editor.Windows
                     property.Property(nameof(PropertyInfo.ColorType)).SetValue(color);
                     property.Property(nameof(PropertyInfo.ContextType)).SetValue(contextType.AssemblyQualifiedName!);
 
+                    float? predictiveValue = null;
+                    
+                    // Predictive property value assignment
+                    if (property.serializedObject.targetObject is FlareControl { Type: ControlType.Menu } control)
+                    {
+                        var menuInfo = control.MenuItem;
+                        if (binding.Source is FlarePropertySource.Blendshape)
+                        {
+                            var defaultValue = binder.GetPropertyValue<float>(binding);
+                            predictiveValue = defaultValue is 0 ? 100f : 0f;
+                            // property.Property(nameof(PropertyInfo.Analog)).SetValue(predictiveValue);
+                        }
+
+                        var predictiveDisable = menuInfo.Type is MenuItemType.Toggle && menuInfo.DefaultState;
+                        property.Property(nameof(PropertyInfo.State))
+                            .SetValue(predictiveDisable ? ControlState.Disabled : ControlState.Enabled);
+                    }
+                    
                     switch (type)
                     {
                         // Seed the default value to start with
@@ -152,6 +170,7 @@ namespace Flare.Editor.Windows
                                 defaultValue = binder.GetPropertyValue(pseudoProperty!);
                             
                             defaultValue = (float)defaultValue;
+                            defaultValue = predictiveValue ?? defaultValue;
                             property.Property(nameof(PropertyInfo.Analog)).SetValue(defaultValue);
                             break;
                         }
