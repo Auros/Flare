@@ -20,18 +20,6 @@ namespace Flare.Editor.Passes
             var descriptor = context.AvatarDescriptor;
             var expressions = descriptor.expressionsMenu;
 
-            
-            /*var menu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-            menu.name = "[Flare] Expression Menu";
-            AssetDatabase.AddObjectToAsset(menu, context.AssetContainer);*/
-            
-            /*expressions.controls.Add(new VRCExpressionsMenu.Control
-            {
-                subMenu = menu,
-                name = "Flare (Test)",
-                type = VRCExpressionsMenu.Control.ControlType.SubMenu
-            });*/
-            
             foreach (var ctx in flare.ControlContexts)
             {
                 if (ctx.Control.Type is not ControlType.Menu)

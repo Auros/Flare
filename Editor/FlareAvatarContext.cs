@@ -28,7 +28,7 @@ namespace Flare.Editor
         public IReadOnlyList<FlareControl> Controls => _controls;
 
         public IReadOnlyList<ControlContext> ControlContexts => _controlContexts;
-
+        
         public void AddTags(FlareTags tags)
         {
             _tags.Add(tags);

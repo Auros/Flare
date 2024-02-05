@@ -36,7 +36,7 @@ namespace Flare.Editor.Drawers
                 return root;
             }
 
-            var module = flareControl.TagInfo.Module;
+            var module = descriptor.GetComponentInChildren<FlareTags>();
 
             if (module!.Tags.Length is 0)
             {

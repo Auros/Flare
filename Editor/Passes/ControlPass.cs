@@ -1,4 +1,5 @@
-﻿using nadena.dev.ndmf;
+﻿using Flare.Models;
+using nadena.dev.ndmf;
 using Sucrose;
 using Sucrose.Animation;
 using UnityEditor.Animations;
@@ -24,7 +25,12 @@ namespace Flare.Editor.Passes
             foreach (var ctx in flare.ControlContexts)
             {
                 var id = ctx.Id;
-                var parameter = sucrose.NewParameter().WithType(SucroseParameterType.Float).WithDefaultValue(0f).WithName(id);
+                var parameter = sucrose.NewParameter().WithType(SucroseParameterType.Float).WithName(id);
+                
+                if (ctx.Control.Type is ControlType.Menu && ctx.Control.MenuItem.Type is MenuItemType.Toggle)
+                    parameter.WithDefaultValue(ctx.Control.MenuItem.DefaultState ? 1f : 0f);
+                if (ctx.Control.Type is ControlType.Menu && ctx.Control.MenuItem.Type is MenuItemType.Radial)
+                    parameter.WithDefaultValue(ctx.Control.MenuItem.DefaultRadialValue);
                 
                 var defaultAnimation = sucrose.NewAnimation(builder =>
                 {

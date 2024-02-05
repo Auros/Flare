@@ -16,6 +16,12 @@ namespace Flare
         public MenuItemInfo MenuItem { get; private set; } = new();
 
         [field: SerializeField]
+        public PhysBoneInfo PhysBoneInfo { get; private set; } = new();
+
+        [field: SerializeField]
+        public ContactInfo ContactInfo { get; private set; } = new();
+        
+        [field: SerializeField]
         public ObjectToggleCollectionInfo ObjectToggleCollection { get; private set; } = new();
         
         [field: SerializeField]

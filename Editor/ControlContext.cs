@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Flare.Editor.Models;
 using Flare.Models;
 using JetBrains.Annotations;
@@ -19,16 +18,10 @@ namespace Flare.Editor
 
         public IReadOnlyList<AnimatableBinaryProperty> Properties => _properties;
         
-        public ControlContext(FlareControl control)
+        public ControlContext(string id, FlareControl control)
         {
+            Id = id;
             Control = control;
-
-            if (control.Type is not ControlType.Menu || string.IsNullOrWhiteSpace(control.MenuItem.Name))
-                Id = Guid.NewGuid().ToString();
-            else
-                Id = control.MenuItem.Name;
-
-            Id = $"[Flare] {Id}";
         }
 
         public void AddProperty(AnimatableBinaryProperty property)

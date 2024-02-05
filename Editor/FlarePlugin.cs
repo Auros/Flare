@@ -25,7 +25,8 @@ namespace Flare.Editor
                 .AfterPlugin("nadena.dev.modular-avatar")
                 .Run<ControlPass>()
                 .Then.Run<ParametrizationPass>()
-                .Then.Run<MenuizationPass>();
+                .Then.Run<MenuizationPass>()
+                .Then.Run<TagizationPass>();
         }
     }
 }

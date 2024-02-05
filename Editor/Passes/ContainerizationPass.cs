@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Flare.Editor.Models;
 using Flare.Editor.Services;
 using Flare.Models;
@@ -19,7 +20,8 @@ namespace Flare.Editor.Passes
 
             foreach (var control in flare.Controls)
             {
-                ControlContext controlContext = new(control);
+                var id = GetId(control, flare);
+                ControlContext controlContext = new(id, control);
                 flare.AddControlContext(controlContext);
                 
                 foreach (var toggle in control.ObjectToggleCollection.Toggles)
@@ -116,6 +118,69 @@ namespace Flare.Editor.Passes
                     }
                 }
             }
+        }
+
+        private static string GetId(FlareControl control, FlareAvatarContext context)
+        {
+            var validId = false;
+            var id = $"[Flare] {control.MenuItem.Name}";
+
+            int run = 0;
+            while (!validId)
+            {
+                if (control.Type is not ControlType.Menu || string.IsNullOrWhiteSpace(control.MenuItem.Name))
+                {
+                    id = $"[Flare] {Guid.NewGuid()}";
+                
+                    // ReSharper disable once ConvertIfStatementToSwitchStatement
+                    if (control.Type is ControlType.PhysBone)
+                    {
+                        var physBoneInfo = control.PhysBoneInfo;
+                        var physBone = physBoneInfo.PhysBone;
+                    
+                        if (physBone != null)
+                        {
+                            // If there is a parameter already provided,
+                            // we use that instead.
+                            var physBoneParameter = physBone.parameter;
+                            if (string.IsNullOrWhiteSpace(physBoneParameter))
+                                physBone.parameter = id;
+                            else
+                                id = physBoneParameter;
+                        }
+                    
+                        id += control.PhysBoneInfo.ParameterType switch
+                        {
+                            PhysBoneParameterType.Stretch => "_Stretch",
+                            PhysBoneParameterType.Squish => "_Squish",
+                            PhysBoneParameterType.IsGrabbed => "_IsGrabbed",
+                            PhysBoneParameterType.IsPosed => "_IsPosed",
+                            PhysBoneParameterType.Angle => "_Angle",
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+                    }
+                    else if (control.Type is ControlType.Contact)
+                    {
+                        var contact = control.ContactInfo.ContactReceiver;
+                    
+                        // ReSharper disable once InvertIf
+                        if (contact != null)
+                        {
+                            if (string.IsNullOrWhiteSpace(contact.parameter))
+                                contact.parameter = id;
+                            else
+                                id = contact.parameter;
+                        }
+                    }
+                }
+
+                if (run > 0)
+                    id += $" {run}";
+
+                validId = context.ControlContexts.All(c => c.Id != id);
+                run++;
+            }
+            return id;
         }
         
         private static void BindPropertyToAnimatable(ControlContext controlContext, BindingService binder, PropertyInfo prop, FlareProperty animatable)

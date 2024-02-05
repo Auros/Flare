@@ -2,6 +2,8 @@
 {
     internal enum ControlType
     {
-        Menu
+        Menu,
+        PhysBone,
+        Contact
     }
 }
