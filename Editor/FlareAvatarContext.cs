@@ -58,7 +58,6 @@ namespace Flare.Editor
                 if (layer.type is not VRCAvatarDescriptor.AnimLayerType.FX)
                     continue;
 
-                layer.isDefault = false;
                 if (!layer.animatorController)
                 {
                     var controller = new AnimatorController
@@ -68,6 +67,8 @@ namespace Flare.Editor
                     AssetDatabase.AddObjectToAsset(controller, build.AssetContainer);
                     layers[i].animatorController = controller;
                 }
+
+                layers[i].isDefault = false;
                 fx = layers[i];
                 break;
             }
