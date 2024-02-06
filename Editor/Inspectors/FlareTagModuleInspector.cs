@@ -48,6 +48,9 @@ namespace Flare.Editor.Inspectors
             previousLayers.AddRange(module.Tags);
             root.schedule.Execute(() =>
             {
+                if (!module)
+                    return;
+                
                 if (previousLayers.SequenceEqual(module.Tags))
                     return;
                 

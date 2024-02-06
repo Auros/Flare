@@ -14,6 +14,9 @@ namespace Flare.Models
 
         [field: SerializeField]
         public MenuItemType Type { get; private set; } = MenuItemType.Toggle;
+
+        [field: SerializeField]
+        public bool IsSaved { get; private set; } = true;
         
         [field: SerializeField]
         public bool DefaultState { get; private set; }

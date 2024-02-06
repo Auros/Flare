@@ -31,9 +31,9 @@ namespace Flare.Editor.Passes
                 return new VRCExpressionParameters.Parameter
                 {
                     name = c.Id,
-                    saved = true,
                     networkSynced = true,
                     defaultValue = defaultValue,
+                    saved = c.Control.Type is ControlType.Menu && c.Control.MenuItem.IsSaved,
                     valueType = c.IsBinary ? VRCExpressionParameters.ValueType.Bool : VRCExpressionParameters.ValueType.Float
                 };
             });

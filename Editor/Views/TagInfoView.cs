@@ -24,7 +24,7 @@ namespace Flare.Editor.Views
             root.CreateButton("Go To Tag Module", () =>
             {
                 var control = (_tagsProperty.serializedObject.targetObject as FlareControl)!;
-                if (!control.TagInfo.EnsureValidated(control.gameObject))
+                if (!control.TagInfo.EnsureValidated(control.gameObject, true))
                     return;
                 
                 Selection.activeObject = control.TagInfo.Module;

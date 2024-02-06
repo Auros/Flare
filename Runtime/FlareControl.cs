@@ -65,6 +65,9 @@ namespace Flare
 
         public void GetReferencesNotOnAvatar(ICollection<Object?> references)
         {
+            if (this == null || transform == null)
+                return;
+            
             var descriptor = transform.GetComponentInParent<VRCAvatarDescriptor>();
             if (!descriptor)
                 return;

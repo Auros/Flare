@@ -16,6 +16,9 @@ namespace Flare.Editor.Views
 
         [PropertyName(nameof(MenuItemInfo.Icon))]
         private readonly SerializedProperty _iconProperty = null!;
+
+        [PropertyName(nameof(MenuItemInfo.IsSaved))]
+        private readonly SerializedProperty _isSavedProperty = null!;
         
         [PropertyName(nameof(MenuItemInfo.DefaultState))]
         private readonly SerializedProperty _defaultStateProperty = null!;
@@ -48,6 +51,9 @@ namespace Flare.Editor.Views
             // Icon
             root.CreatePropertyField(_iconProperty)
                 .WithTooltip("The icon used when displaying this item in the hand menu.");
+
+            root.CreatePropertyField(_isSavedProperty)
+                .WithTooltip("Is the control value saved between worlds?");
 
             var defaultStateField = root.CreatePropertyField(_defaultStateProperty).WithLabel("Default Toggle Value")
                 .WithTooltip("Is this menu item ON or OFF by default?");

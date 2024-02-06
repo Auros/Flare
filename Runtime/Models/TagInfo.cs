@@ -13,9 +13,9 @@ namespace Flare.Models
         [field: SerializeField]
         public FlareTag[] Tags { get; private set; } = Array.Empty<FlareTag>();
 
-        public bool EnsureValidated(GameObject gameObject)
+        public bool EnsureValidated(GameObject gameObject, bool skipLengthCheck = false)
         {
-            if (Tags.Length is 0)
+            if (Tags.Length is 0 && !skipLengthCheck)
                 return false;
 
             var descriptor = gameObject.GetComponentInParent<VRC_AvatarDescriptor>();
