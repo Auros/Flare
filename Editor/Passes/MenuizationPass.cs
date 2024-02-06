@@ -23,6 +23,18 @@ namespace Flare.Editor.Passes
             var descriptor = context.AvatarDescriptor;
             var expressions = descriptor.expressionsMenu;
 
+            // If for a reason we have no controls, don't generate any menus.
+            if (flare.ControlContexts.Count == 0)
+                return;
+            
+            if (expressions == null)
+            {
+                expressions = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+                expressions.controls = new List<VRCExpressionsMenu.Control>(8);
+                AssetDatabase.AddObjectToAsset(expressions, context.AssetContainer);
+                descriptor.expressionsMenu = expressions;
+            }
+
             foreach (var ctx in flare.ControlContexts)
             {
                 if (ctx.Control.Type is not ControlType.Menu)
@@ -105,10 +117,10 @@ namespace Flare.Editor.Passes
                 if (control.type is VRCExpressionsMenu.Control.ControlType.SubMenu && control.subMenu != null)
                     ShrinkAndNestFolderization(control.subMenu, container);
             
-            if (8 >= menu.controls.Count)
+            if (VRCExpressionsMenu.MAX_CONTROLS >= menu.controls.Count)
                 return;
 
-            while (menu.controls.Count > 8)
+            while (menu.controls.Count > VRCExpressionsMenu.MAX_CONTROLS)
             {
                 var more = menu.controls.FirstOrDefault(
                     c => c.type is VRCExpressionsMenu.Control.ControlType.SubMenu && c.name == _subId

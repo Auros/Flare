@@ -17,7 +17,7 @@ namespace Flare.Editor.Passes
             var vrcParams = descriptor.expressionParameters;
 
             // If persistent, copy to avoid messing with the original.
-            if (!EditorUtility.IsPersistent(vrcParams))
+            if (!EditorUtility.IsPersistent(vrcParams) || vrcParams == null)
                 return;
             
             var newParams = ScriptableObject.CreateInstance<VRCExpressionParameters>();

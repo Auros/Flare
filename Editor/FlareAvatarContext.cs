@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using Sucrose;
 using Sucrose.Animation;
+using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -49,8 +50,32 @@ namespace Flare.Editor
             if (_container is not null)
                 return _container;
             
-            var fx = build.AvatarDescriptor.baseAnimationLayers.First(l => l.type is VRCAvatarDescriptor.AnimLayerType.FX);
-            _container = new SucroseContainer((fx.animatorController as AnimatorController)!);
+            VRCAvatarDescriptor.CustomAnimLayer? fx = null;
+            var layers = build.AvatarDescriptor.baseAnimationLayers;
+            for (int i = 0; i < layers.Length; i++)
+            {
+                var layer = layers[i];
+                if (layer.type is not VRCAvatarDescriptor.AnimLayerType.FX)
+                    continue;
+
+                layer.isDefault = false;
+                if (!layer.animatorController)
+                {
+                    var controller = new AnimatorController
+                    {
+                        name = "[Flare] FX"
+                    };
+                    AssetDatabase.AddObjectToAsset(controller, build.AssetContainer);
+                    layers[i].animatorController = controller;
+                }
+                fx = layers[i];
+                break;
+            }
+
+            if (fx is null)
+                throw new InvalidOperationException("Cannot find FX layer");
+            
+            _container = new SucroseContainer((fx.Value.animatorController as AnimatorController)!);
             
             if (_container.LayerCount is 0)
                 _container.NewLayer().WithName("Base Layer").WithWeight(1f);

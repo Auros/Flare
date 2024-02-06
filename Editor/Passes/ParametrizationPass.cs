@@ -2,6 +2,8 @@
 using System.Linq;
 using Flare.Models;
 using nadena.dev.ndmf;
+using UnityEditor;
+using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Flare.Editor.Passes
@@ -36,6 +38,14 @@ namespace Flare.Editor.Passes
                 };
             });
 
+            if (vrcParams == null)
+            {
+                vrcParams = ScriptableObject.CreateInstance<VRCExpressionParameters>();
+                vrcParams.parameters = Array.Empty<VRCExpressionParameters.Parameter>();
+                AssetDatabase.AddObjectToAsset(vrcParams, context.AssetContainer);
+                descriptor.expressionParameters = vrcParams;
+            }
+            
             vrcParams.parameters = vrcParams.parameters.Concat(flareParameters).ToArray();
         }
     }
