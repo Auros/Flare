@@ -8,5 +8,9 @@
   "author": {
     "name": "Auros Nexus",
     "url": "https://github.com/Auros/Flare"
+  },
+  "vpmDependencies": {
+    "com.vrchat.avatars": "^3.5.0",
+    "nexus.auros.sucrose": "^1.0.0-beta.1"
   }
 }
