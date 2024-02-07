@@ -34,6 +34,7 @@ namespace Flare.Editor.Elements
         private EventCallback<ChangeEvent<Vector2>>? _vector2Change;
         private EventCallback<ChangeEvent<Vector3>>? _vector3Change;
         private EventCallback<ChangeEvent<Vector4>>? _vector4Change;
+        private bool _useOverrideValue;
         
         public CombinatoryFieldElement()
         {
@@ -75,6 +76,11 @@ namespace Flare.Editor.Elements
                 visualElement.AddToClassList(ObjectField.alignedFieldUssClassName);
                 visualElement.Visible(false);
             }
+        }
+
+        public void SetMode(bool useOverride)
+        {
+            _useOverrideValue = useOverride;
         }
 
         public void SetLabel(string label)
@@ -128,6 +134,9 @@ namespace Flare.Editor.Elements
             var pathProperty = property.Property(nameof(PropertyInfo.Path));
             var analogProperty = property.Property(nameof(PropertyInfo.Analog));
             var vectorProperty = property.Property(nameof(PropertyInfo.Vector));
+
+            var overrideAnalogProperty = property.Property(nameof(PropertyInfo.OverrideDefaultAnalog));
+            var overrideVectorProperty = property.Property(nameof(PropertyInfo.OverrideDefaultVector));
 
             var propertyName = nameProperty.stringValue;
             var propertyPath = pathProperty.stringValue;
@@ -196,33 +205,36 @@ namespace Flare.Editor.Elements
             // ReSharper disable once ConvertToLocalFunction
             Func<SerializedProperty, Vector4> getVector = prop =>
                 enabledInHierarchy ? prop.vector4Value : defaultVectorValue.GetValueOrDefault();
+
+            var mainAnalogProperty = _useOverrideValue ? overrideAnalogProperty : analogProperty;
+            var mainVectorProperty = _useOverrideValue ? overrideVectorProperty : vectorProperty;
             
             switch (target)
             {
                 case Toggle toggle:
                     toggle.UnregisterValueChangedCallback(_boolChange);
-                    _boolChange = evt => analogProperty.SetValue(evt.newValue ? 1f : 0f);
+                    _boolChange = evt => mainAnalogProperty.SetValue(evt.newValue ? 1f : 0f);
                     toggle.RegisterValueChangedCallback(_boolChange);
-                    toggle.TrackPropertyValue(analogProperty, prop => toggle.value = getAnalog(prop) is not 0);
-                    toggle.value = getAnalog(analogProperty) is not 0;
+                    toggle.TrackPropertyValue(mainAnalogProperty, prop => toggle.value = getAnalog(prop) is not 0);
+                    toggle.value = getAnalog(mainAnalogProperty) is not 0;
                     break;
                 case IntegerField integerField:
                     integerField.UnregisterValueChangedCallback(_intChange);
-                    _intChange = evt => analogProperty.SetValue((float)evt.newValue);
+                    _intChange = evt => mainAnalogProperty.SetValue((float)evt.newValue);
                     integerField.RegisterValueChangedCallback(_intChange);
-                    integerField.TrackPropertyValue(analogProperty, prop => integerField.value = (int)getAnalog(prop));
-                    integerField.value = (int)getAnalog(analogProperty);
+                    integerField.TrackPropertyValue(mainAnalogProperty, prop => integerField.value = (int)getAnalog(prop));
+                    integerField.value = (int)getAnalog(mainAnalogProperty);
                     break;
                 case FloatField floatField:
                     floatField.UnregisterValueChangedCallback(_floatChange);
-                    _floatChange = evt => analogProperty.SetValue(evt.newValue);
+                    _floatChange = evt => mainAnalogProperty.SetValue(evt.newValue);
                     floatField.RegisterValueChangedCallback(_floatChange);
 
                     var isBlendShape = nameProperty.stringValue.StartsWith("blendShape.");
                     var maxSliderValue = isBlendShape ? 100f : 1f;
                     _slider.highValue = maxSliderValue;
                     
-                    floatField.TrackPropertyValue(analogProperty, prop =>
+                    floatField.TrackPropertyValue(mainAnalogProperty, prop =>
                     {
                         var defaultFloatValue = getAnalog(prop);
                         floatField.value = defaultFloatValue;
@@ -232,7 +244,7 @@ namespace Flare.Editor.Elements
                         _slider.Visible(shouldBeEnabled);
                         _slider.value = defaultFloatValue;
                     });
-                    var defaultValue = getAnalog(analogProperty);
+                    var defaultValue = getAnalog(mainAnalogProperty);
                     floatField.value = defaultValue;
                     
                     var shouldBeEnabled = defaultValue >= 0 && defaultValue <= maxSliderValue && enabledSelf;
@@ -252,34 +264,34 @@ namespace Flare.Editor.Elements
                     break;
                 case Vector2Field v2Field:
                     v2Field.UnregisterValueChangedCallback(_vector2Change);
-                    _vector2Change = evt => vectorProperty.SetValue((Vector4)evt.newValue);
+                    _vector2Change = evt => mainVectorProperty.SetValue((Vector4)evt.newValue);
                     v2Field.RegisterValueChangedCallback(_vector2Change);
-                    v2Field.TrackPropertyValue(vectorProperty, prop => v2Field.value = getVector(prop));
-                    v2Field.value = getVector(vectorProperty);
+                    v2Field.TrackPropertyValue(mainVectorProperty, prop => v2Field.value = getVector(prop));
+                    v2Field.value = getVector(mainVectorProperty);
                     break;
                 case Vector3Field v3Field:
                     v3Field.UnregisterValueChangedCallback(_vector3Change);
-                    _vector3Change = evt => vectorProperty.SetValue((Vector4)evt.newValue);
+                    _vector3Change = evt => mainVectorProperty.SetValue((Vector4)evt.newValue);
                     v3Field.RegisterValueChangedCallback(_vector3Change);
-                    v3Field.TrackPropertyValue(vectorProperty, prop => v3Field.value = getVector(prop));
-                    v3Field.value = getVector(vectorProperty);
+                    v3Field.TrackPropertyValue(mainVectorProperty, prop => v3Field.value = getVector(prop));
+                    v3Field.value = getVector(mainVectorProperty);
                     break;
                 case Vector4Field v4Field:
                     v4Field.UnregisterValueChangedCallback(_vector4Change);
-                    _vector4Change = evt => vectorProperty.SetValue(evt.newValue);
+                    _vector4Change = evt => mainVectorProperty.SetValue(evt.newValue);
                     v4Field.RegisterValueChangedCallback(_vector4Change);
-                    v4Field.TrackPropertyValue(vectorProperty, prop => v4Field.value = getVector(prop));
-                    v4Field.value = getVector(vectorProperty);
+                    v4Field.TrackPropertyValue(mainVectorProperty, prop => v4Field.value = getVector(prop));
+                    v4Field.value = getVector(mainVectorProperty);
                     break;
                 case ColorField colorField:
                     colorField.UnregisterValueChangedCallback(_colorChange);
-                    _colorChange = evt => vectorProperty.SetValue((Vector4)evt.newValue);
+                    _colorChange = evt => mainVectorProperty.SetValue((Vector4)evt.newValue);
                     colorField.RegisterValueChangedCallback(_colorChange);
-                    colorField.TrackPropertyValue(vectorProperty, prop => colorField.value = getVector(prop));
+                    colorField.TrackPropertyValue(mainVectorProperty, prop => colorField.value = getVector(prop));
                     colorField.showAlpha = valueType is PropertyValueType.Vector4;
                     colorField.hdr = colorType is PropertyColorType.HDR;
                     colorField.showEyeDropper = enabledSelf;
-                    colorField.value = getVector(vectorProperty);
+                    colorField.value = getVector(mainVectorProperty);
                     break;
             }
             

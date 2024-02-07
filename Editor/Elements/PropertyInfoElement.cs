@@ -1,4 +1,5 @@
 ﻿using System;
+using Flare.Editor.Editor.Extensions;
 using Flare.Editor.Extensions;
 using Flare.Editor.Models;
 using Flare.Editor.Windows;
@@ -17,6 +18,7 @@ namespace Flare.Editor.Elements
         private readonly Button _selectButton;
         private readonly CombinatoryFieldElement _valuePreview;
         private readonly CombinatoryFieldElement _valueSelector;
+        private readonly CombinatoryFieldElement _overrideValueSelector;
         private readonly EnumField _controlStateDropdown;
 
         private Action? _selector;
@@ -28,6 +30,7 @@ namespace Flare.Editor.Elements
             _paneMenu = new PaneMenu();
             _valuePreview = new CombinatoryFieldElement();
             _valueSelector = new CombinatoryFieldElement();
+            _overrideValueSelector = new CombinatoryFieldElement();
             _controlStateDropdown = new EnumField();
             
             var topContainer = this.CreateHorizontal().WithMargin(4f);
@@ -38,6 +41,7 @@ namespace Flare.Editor.Elements
             _valuePreview.Enabled(false);
             _valuePreview.SetLabel("Current Value");
             _valueSelector.SetLabel("Target Value");
+            _overrideValueSelector.SetLabel("Default Value");
             _controlStateDropdown.label = "Control State";
             _controlStateDropdown.AddToClassList(ObjectField.alignedFieldUssClassName);
             _controlStateDropdown.RegisterValueChangedCallback(evt =>
@@ -54,6 +58,7 @@ namespace Flare.Editor.Elements
             
             Add(topContainer);
             Add(_valuePreview);
+            Add(_overrideValueSelector);
             Add(_valueSelector);
             Add(_controlStateDropdown);
             
@@ -65,9 +70,21 @@ namespace Flare.Editor.Elements
             _paneMenu.SetData(evt =>
             {
                 evt.menu.AppendAction("Remove", _ => onRemoveRequested?.Invoke());
+
+                var nameProperty = _target?.Property(nameof(PropertyInfo.Name));
+                var overrideProperty = _target?.Property(nameof(PropertyInfo.OverrideDefaultValue));
                 
-                var targetAvailable = _target != null && !string.IsNullOrEmpty(_target.Property(nameof(PropertyInfo.Name)).stringValue);
+                var targetAvailable = _target != null && !string.IsNullOrEmpty(nameProperty?.stringValue);
                 evt.menu.AppendAction("Change Property", _ => ShowPropertyWindow(_target), targetAvailable ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+
+                if (overrideProperty is null)
+                    return;
+                
+                var overrideValue = overrideProperty.boolValue;
+                var status = overrideValue ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal;
+                var newValue = !overrideValue;
+                
+                evt.menu.AppendAction("Override Default Value", _ => overrideProperty.SetValue(newValue), status);
             });
         }
 
@@ -79,10 +96,12 @@ namespace Flare.Editor.Elements
             _nameLabel.Unbind();
             _selectButton.Unbind();
             _controlStateDropdown.Unbind();
+            _overrideValueSelector.Unbind();
 
             var nameProperty = property.Property(nameof(PropertyInfo.Name));
             var pathProperty = property.Property(nameof(PropertyInfo.Path));
             var stateProperty = property.Property(nameof(PropertyInfo.State));
+            var overrideProperty = property.Property(nameof(PropertyInfo.OverrideDefaultValue));
 
             _nameLabel.TrackPropertyValue(property, prop =>
             {
@@ -96,13 +115,29 @@ namespace Flare.Editor.Elements
             {
                 _selectButton.Visible(string.IsNullOrEmpty(prop.stringValue));
             });
-            
             _controlStateDropdown.TrackPropertyValue(nameProperty, prop =>
             {
-                var propertyNamExists = string.IsNullOrEmpty(prop.stringValue);
-                _controlStateDropdown.Visible(!propertyNamExists);
+                var propertyNameExists = string.IsNullOrEmpty(prop.stringValue);
+                _controlStateDropdown.Visible(!propertyNameExists);
             });
-
+            _controlStateDropdown.TrackPropertyValue(stateProperty, prop =>
+            {
+                var isEnabled = (ControlState)prop.enumValueIndex is ControlState.Enabled;
+                var whileText = !isEnabled ? "Active" : "Inactive";
+                _overrideValueSelector.SetLabel($"Default Value (While {whileText})");
+            });
+            
+            var isEnabled = (ControlState)stateProperty.enumValueIndex is ControlState.Enabled;
+            var whileText = !isEnabled ? "Active" : "Inactive";
+            _overrideValueSelector.SetLabel($"Default Value (While {whileText})");
+            
+            _overrideValueSelector.SetMode(true);
+            _overrideValueSelector.Visible(overrideProperty.boolValue);
+            _nameLabel.TrackPropertyValue(overrideProperty, prop =>
+            {
+                _overrideValueSelector.Visible(prop.boolValue);
+            });
+            
             _controlStateDropdown.BindProperty(stateProperty);
             
             var propertyName = nameProperty.stringValue;
@@ -118,6 +153,7 @@ namespace Flare.Editor.Elements
             
             _valuePreview.SetBinding(_target);
             _valueSelector.SetBinding(_target);
+            _overrideValueSelector.SetBinding(_target);
             OnStateFieldChanged(_controlStateDropdown, (ControlState)stateProperty.enumValueIndex);
         }
         

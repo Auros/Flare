@@ -20,6 +20,7 @@ namespace Flare.Editor.Passes
 
         protected override void Execute(BuildContext context)
         {
+            var avatarRoot = context.AvatarRootTransform;
             var flare = context.GetState<FlareAvatarContext>();
 
             foreach (var control in flare.Controls)
@@ -38,12 +39,13 @@ namespace Flare.Editor.Passes
                     var type = typeof(GameObject);
                     var (path, defaultValue) = toggle.Target switch
                     {
-                        GameObject go => (go.transform.GetAnimatablePath(context.AvatarRootTransform), go.activeSelf),
-                        Component component => (component.transform.GetAnimatablePath(context.AvatarRootTransform), (component as Behaviour).AsNullable()?.enabled ?? (component as Renderer).AsNullable()?.enabled),
+                        GameObject go => (go.transform.GetAnimatablePath(avatarRoot), go.activeSelf),
+                        Renderer renderer => (renderer.transform.GetAnimatablePath(avatarRoot), renderer.enabled),
+                        Behaviour behaviour => (behaviour.transform.GetAnimatablePath(avatarRoot), behaviour.enabled),
                         _ => (null, false)
                     };
 
-                    if (path is null || defaultValue is null)
+                    if (path is null)
                     {
                         // TODO: Report insigificant error.
                         // NDMF has an error report API but there's barely any docs on how to use it properly.
@@ -54,13 +56,13 @@ namespace Flare.Editor.Passes
                     float inverseFloatValue;
                     if (toggle.MenuMode is ToggleMode.Enabled)
                     {
-                        defaultFloatValue = defaultValue.Value ? 1f : 0f;
+                        defaultFloatValue = defaultValue ? 1f : 0f;
                         inverseFloatValue = toggle.ToggleMode is ToggleMode.Enabled ? 1f : 0f;
                     }
                     else
                     {
                         defaultFloatValue = toggle.ToggleMode is ToggleMode.Enabled ? 1f : 0f;
-                        inverseFloatValue = defaultValue.Value ? 1f : 0f;
+                        inverseFloatValue = defaultValue ? 1f : 0f;
                     }
                     
                     if (toggle.Target is Renderer or Behaviour)
@@ -275,10 +277,19 @@ namespace Flare.Editor.Passes
             var path = animatable.Path;
             var type = animatable.ContextType;
 
-            void CreateAnimatableFloatProperty(FlarePseudoProperty flarePseudoProperty, float inverseValue)
+            void CreateAnimatableFloatProperty(FlarePseudoProperty flarePseudoProperty, float inverseValue, int index)
             {
                 var name = flarePseudoProperty.Name;
-                var defaultValue = binder.GetPropertyValue(flarePseudoProperty);
+                var defaultValue = prop.OverrideDefaultValue ? prop.ValueType switch
+                {
+                    PropertyValueType.Boolean => prop.OverrideDefaultAnalog,
+                    PropertyValueType.Integer => prop.OverrideDefaultAnalog,
+                    PropertyValueType.Float => prop.OverrideDefaultAnalog,
+                    PropertyValueType.Vector2 => prop.OverrideDefaultVector[index],
+                    PropertyValueType.Vector3 => prop.OverrideDefaultVector[index],
+                    PropertyValueType.Vector4 => prop.OverrideDefaultVector[index],
+                    _ => throw new ArgumentOutOfRangeException()
+                } : binder.GetPropertyValue(flarePseudoProperty);
                 var targetDefaultValue = prop.State is ControlState.Enabled ? defaultValue : inverseValue;
                 var targetInverseValue = prop.State is ControlState.Enabled ? inverseValue : defaultValue;
 
@@ -291,18 +302,18 @@ namespace Flare.Editor.Passes
                 case PropertyValueType.Float or PropertyValueType.Boolean or PropertyValueType.Integer:
                 {
                     var inverseValue = prop.Analog;
-                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), inverseValue);
+                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), inverseValue, 0);
                     break;
                 }
                 case PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4:
                 {
                     // Need to convert each individual property for vectors to floats
-                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), prop.Vector[0]); // Guaranteed
-                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(1), prop.Vector[1]); // Guaranteed
+                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), prop.Vector[0], 0); // Guaranteed
+                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(1), prop.Vector[1], 1); // Guaranteed
                     if (animatable.Type is PropertyValueType.Vector3 or PropertyValueType.Vector4)
-                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(2), prop.Vector[2]);
+                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(2), prop.Vector[2], 2);
                     if (animatable.Type is PropertyValueType.Vector4)
-                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(3), prop.Vector[3]);
+                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(3), prop.Vector[3], 3);
                     break;
                 }
             }

@@ -17,6 +17,7 @@ namespace Flare.Editor.Passes
             var root = context.AvatarRootObject;
             var flare = context.GetState<FlareAvatarContext>();
             var modules = root.GetComponentsInChildren<FlareModule>();
+            var descriptor = context.AvatarDescriptor;
             
             foreach (var module in modules)
             {
@@ -34,7 +35,7 @@ namespace Flare.Editor.Passes
                             if (target == null)
                                 return false;
 
-                            return target.GetComponentInParent<VRCAvatarDescriptor>() != context.AvatarDescriptor;
+                            return target.GetComponentInParent<VRCAvatarDescriptor>() != descriptor;
                         });
 
                         if (!invalidRefs)
@@ -46,7 +47,7 @@ namespace Flare.Editor.Passes
                                     : g.Exclusions;
 
                                 foreach (var obj in refs)
-                                    if (obj != null && obj.GetComponentInParent<VRCAvatarDescriptor>() != context.AvatarDescriptor)
+                                    if (obj != null && obj.GetComponentInParent<VRCAvatarDescriptor>() != descriptor)
                                         return true;
 
                                 return false;
