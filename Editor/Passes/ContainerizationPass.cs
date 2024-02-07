@@ -40,6 +40,7 @@ namespace Flare.Editor.Passes
             //
             // 12 minutes later and well I'll be damned it works. So it turns out the hard crash only occures when a
             // non animatable (non-component) object is passed in as the context. ah, eto.... EHHH?
+            // I'm leaving this here just because...
             //
             //BindingService? exclusiveBinder = null;
             //ILookup<string, FlareProperty>? exclusiveBindings = null;
