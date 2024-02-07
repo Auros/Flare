@@ -2,6 +2,7 @@
 using Flare.Models;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
+using Object = UnityEngine.Object;
 
 namespace Flare
 {
@@ -73,7 +74,18 @@ namespace Flare
                 return;
 
             var root = descriptor.transform;
-            
+
+            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+            switch (Type)
+            {
+                case ControlType.PhysBone when PhysBoneInfo.PhysBone != null:
+                    SearchTransform(root, PhysBoneInfo.PhysBone.transform, PhysBoneInfo.PhysBone, references);
+                    break;
+                case ControlType.Contact when ContactInfo.ContactReceiver != null:
+                    SearchTransform(root, ContactInfo.ContactReceiver.transform, ContactInfo.ContactReceiver, references);
+                    break;
+            }
+
             foreach (var toggle in ObjectToggleCollection.Toggles)
             {
                 var target = toggle.GetTargetTransform();
