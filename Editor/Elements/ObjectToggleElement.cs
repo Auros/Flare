@@ -202,6 +202,11 @@ namespace Flare.Editor.Elements
                 _toggleModeField.value = value.Value ? ToggleMode.Disabled : ToggleMode.Enabled;
             });
 
+            _objectField.TrackPropertyValue(overrideProperty, _ =>
+            {
+                foreach (var component in _overrideElements)
+                    component.Visible(overrideProperty.boolValue);
+            });
             _alternateModeField.TrackPropertyValue(menuModeProperty, _ =>
             {
                 _alternateModeDisplay.value = (ToggleMenuState)menuModeProperty.enumValueIndex is ToggleMenuState.Active
