@@ -1,4 +1,6 @@
-﻿namespace Flare.Models
+﻿using UnityEngine;
+
+namespace Flare.Models
 {
     internal enum ToggleMode
     {

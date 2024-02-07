@@ -11,10 +11,16 @@ namespace Flare.Models
         public Object? Target { get; private set; }
         
         [field: SerializeField]
-        public ToggleMode MenuMode { get; set; }
+        public ToggleMenuState MenuMode { get; set; }
         
         [field: SerializeField]
         public ToggleMode ToggleMode { get; set; }
+        
+        [field: SerializeField]
+        public bool OverrideDefaultValue { get; private set; }
+        
+        [field: SerializeField]
+        public ToggleMode AlternateMode { get; set; }
 
         /// <summary>
         /// Ensures that only GameObjects and Behaviours, and Renderers can be provided for the object target.

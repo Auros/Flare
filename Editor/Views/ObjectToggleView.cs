@@ -43,16 +43,16 @@ namespace Flare.Editor.Views
                     var menuItem = _flareControl.MenuItem;
                     var state = menuItem.Type switch
                     {
-                        MenuItemType.Button => ToggleMode.Enabled,
-                        MenuItemType.Toggle => menuItem.DefaultState ? ToggleMode.Disabled : ToggleMode.Enabled,
-                        MenuItemType.Radial => menuItem.DefaultRadialValue >= 0.5f ? ToggleMode.Disabled : ToggleMode.Enabled,
+                        MenuItemType.Button => ToggleMenuState.Active,
+                        MenuItemType.Toggle => menuItem.DefaultState ? ToggleMenuState.Inactive : ToggleMenuState.Active,
+                        MenuItemType.Radial => menuItem.DefaultRadialValue >= 0.5f ? ToggleMenuState.Inactive : ToggleMenuState.Active,
                         _ => throw new ArgumentOutOfRangeException()
                     };
                     info.MenuMode = state;
                 }
                 else
                 {
-                    info.MenuMode = ToggleMode.Enabled;
+                    info.MenuMode = ToggleMenuState.Active;
                 }
                 
                 _arrayProperty.GetArrayElementAtIndex(index).SetValue(info);
@@ -106,7 +106,7 @@ namespace Flare.Editor.Views
                     // We don't need to resize for this property.
                     element = (ObjectToggleElement)container[index];
                 }
-
+                
                 var targetIndex = index;
                 element.SetData(property, () =>
                 {

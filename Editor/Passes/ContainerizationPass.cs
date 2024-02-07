@@ -54,7 +54,7 @@ namespace Flare.Editor.Passes
 
                     float defaultFloatValue;
                     float inverseFloatValue;
-                    if (toggle.MenuMode is ToggleMode.Enabled)
+                    if (toggle.MenuMode is ToggleMenuState.Active)
                     {
                         defaultFloatValue = defaultValue ? 1f : 0f;
                         inverseFloatValue = toggle.ToggleMode is ToggleMode.Enabled ? 1f : 0f;
