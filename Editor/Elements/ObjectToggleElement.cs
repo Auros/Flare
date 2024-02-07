@@ -160,10 +160,10 @@ namespace Flare.Editor.Elements
                 OnModeFieldChanged(_toggleModeField, toggleMode);
             
             if (_alternateModeField.value is ToggleMode altMenuMode)
-                OnModeFieldChanged(_menuModeField, altMenuMode);
+                OnModeFieldChanged(_alternateModeField, altMenuMode);
             
             if (_alternateModeDisplay.value is ToggleMode altToggleMode)
-                OnModeFieldChanged(_toggleModeField, altToggleMode);
+                OnModeFieldChanged(_alternateModeDisplay, altToggleMode);
         }
 
         /// <summary>
