@@ -26,11 +26,24 @@ namespace Flare.Editor.Passes
             {
                 var id = ctx.Id;
                 var parameter = sucrose.NewParameter().WithType(SucroseParameterType.Float).WithName(id);
+
+                var isMenu = ctx.Control.Type is ControlType.Menu;
+                var menuType = ctx.Control.MenuItem.Type;
+                var menu = ctx.Control.MenuItem;
                 
-                if (ctx.Control.Type is ControlType.Menu && ctx.Control.MenuItem.Type is MenuItemType.Toggle)
+                if (isMenu && menuType is MenuItemType.Toggle)
                     parameter.WithDefaultValue(ctx.Control.MenuItem.DefaultState ? 1f : 0f);
-                if (ctx.Control.Type is ControlType.Menu && ctx.Control.MenuItem.Type is MenuItemType.Radial)
+                
+                if (isMenu && menuType is MenuItemType.Radial)
                     parameter.WithDefaultValue(ctx.Control.MenuItem.DefaultRadialValue);
+                
+                // Special check for tagization pass
+                if (isMenu && menuType is MenuItemType.Button && menu.IsTagTrigger && !string.IsNullOrWhiteSpace(menu.Tag))
+                {
+                    // For now, button triggers are exclusively for tags.
+                    flare.AddTrigger(menu.Tag, parameter);
+                    continue;
+                }
                 
                 var defaultAnimation = sucrose.NewAnimation(builder =>
                 {

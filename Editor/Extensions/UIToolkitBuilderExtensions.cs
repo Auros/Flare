@@ -94,12 +94,6 @@ namespace Flare.Editor.Extensions
             slider.highValue = end;
             return slider;
         }
-        
-        public static T WithLabel<T, TValueType>(this T element, string label = "") where T : BaseField<TValueType>
-        {
-            element.label = label;
-            return element;
-        }
 
         public static PropertyField WithLabel(this PropertyField field, string label)
         {
@@ -167,6 +161,12 @@ namespace Flare.Editor.Extensions
         public static T WithMarginTop<T>(this T element, float marginTop) where T : VisualElement
         {
             element.style.marginTop = marginTop;
+            return element;
+        }
+        
+        public static T WithMarginLeft<T>(this T element, float marginLeft) where T : VisualElement
+        {
+            element.style.marginLeft = marginLeft;
             return element;
         }
         

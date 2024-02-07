@@ -25,6 +25,12 @@ namespace Flare.Editor.Views
         
         [PropertyName(nameof(MenuItemInfo.DefaultRadialValue))]
         private readonly SerializedProperty _defaultRadialValueProperty = null!;
+
+        [PropertyName(nameof(MenuItemInfo.IsTagTrigger))]
+        private readonly SerializedProperty _isTagTriggerProperty = null!;
+
+        [PropertyName(nameof(MenuItemInfo.Tag))]
+        private readonly SerializedProperty _tagProperty = null!;
         
         private readonly FlareControl _control;
         
@@ -52,7 +58,7 @@ namespace Flare.Editor.Views
             root.CreatePropertyField(_iconProperty)
                 .WithTooltip("The icon used when displaying this item in the hand menu.");
 
-            root.CreatePropertyField(_isSavedProperty)
+            var savedField = root.CreatePropertyField(_isSavedProperty)
                 .WithTooltip("Is the control value saved between worlds?")
                 .WithMarginTop(2f); // (Fix) Toggle property fields are annoyingly smaller than others.
             
@@ -63,19 +69,37 @@ namespace Flare.Editor.Views
             
             var defaultRadialValueField = root.CreatePropertyField(_defaultRadialValueProperty);
 
-            UpdateDefaultStateFields((MenuItemType)_typeProperty.enumValueIndex);
+            var tagTrigger = root.CreatePropertyField(_isTagTriggerProperty)
+                .WithLabel("Is Tag Trigger (Experimental)")
+                .WithMarginTop(2f); // (Fix) Toggle property fields are annoyingly smaller than others.
+            
+            var tagOption = root.CreatePropertyField(_tagProperty)
+                .WithLabel("Tag (Experimental)")
+                .WithMarginLeft(13f);
+            
+            tagTrigger.RegisterValueChangeCallback(_ => UpdateAllFieldVisuals(_control.MenuItem.Type));
+
+            UpdateAllFieldVisuals((MenuItemType)_typeProperty.enumValueIndex);
+            
             typeField.RegisterValueChangeCallback(ctx =>
-                UpdateDefaultStateFields((MenuItemType)ctx.changedProperty.enumValueIndex)
+                UpdateAllFieldVisuals((MenuItemType)ctx.changedProperty.enumValueIndex)
             );
             
             root.CreateHorizontalSpacer(10f);
+            
             return;
 
-            void UpdateDefaultStateFields(MenuItemType type)
+            void UpdateAllFieldVisuals(MenuItemType type)
             {
                 var isRadial = type is MenuItemType.Radial;
+                var isButton = type is MenuItemType.Button;
+                
                 defaultRadialValueField.style.display = isRadial ? DisplayStyle.Flex : DisplayStyle.None;
-                defaultStateField.style.display = isRadial ? DisplayStyle.None : DisplayStyle.Flex;
+                defaultStateField.style.display = isRadial || isButton ? DisplayStyle.None : DisplayStyle.Flex;
+                
+                tagTrigger.Visible(isButton);
+                savedField.Visible(!isButton);
+                tagOption.Visible(isButton && _control.MenuItem.IsTagTrigger);
             }
         }
     }

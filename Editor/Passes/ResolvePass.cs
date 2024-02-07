@@ -1,7 +1,6 @@
-﻿using System.Linq;
-using Flare.Models;
-using nadena.dev.ndmf;
-using VRC.SDK3.Avatars.Components;
+﻿using nadena.dev.ndmf;
+using UnityEngine;
+using UnityEngine.Pool;
 
 namespace Flare.Editor.Passes
 {
@@ -17,8 +16,7 @@ namespace Flare.Editor.Passes
             var root = context.AvatarRootObject;
             var flare = context.GetState<FlareAvatarContext>();
             var modules = root.GetComponentsInChildren<FlareModule>();
-            var descriptor = context.AvatarDescriptor;
-            
+
             foreach (var module in modules)
             {
                 // Feature: Ignore modules that are disabled.
@@ -28,33 +26,15 @@ namespace Flare.Editor.Passes
                 switch (module)
                 {
                     case FlareControl control:                
-                        // Disqualify controls with objects references not on the avatar.
-                        var invalidRefs = control.ObjectToggleCollection.Toggles.Any(t =>
-                        {
-                            var target = t.GetTargetTransform();
-                            if (target == null)
-                                return false;
-
-                            return target.GetComponentInParent<VRCAvatarDescriptor>() != descriptor;
-                        });
-
-                        if (!invalidRefs)
-                        {
-                            invalidRefs = control.PropertyGroupCollection.Groups.Any(g =>
-                            {
-                                var refs = g.SelectionType is PropertySelectionType.Normal
-                                    ? g.Inclusions
-                                    : g.Exclusions;
-
-                                foreach (var obj in refs)
-                                    if (obj != null && obj.GetComponentInParent<VRCAvatarDescriptor>() != descriptor)
-                                        return true;
-
-                                return false;
-                            });
-                        }
-
-                        if (!invalidRefs)
+                        // Disqualify controls with objects references not on the avatar or other errors.
+                        // We use the error reporter designed for the UI.
+                        var errors = ListPool<Object?>.Get();
+                        
+                        control.GetReferencesNotOnAvatar(errors);
+                        var errorCount = errors.Count;
+                        ListPool<Object?>.Release(errors);
+                        
+                        if (errorCount is 0)
                             flare.AddControl(control);
                         
                         break;

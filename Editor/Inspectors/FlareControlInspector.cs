@@ -6,6 +6,7 @@ using Flare.Editor.Extensions;
 using Flare.Editor.Views;
 using Flare.Models;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine.Pool;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -49,13 +50,13 @@ namespace Flare.Editor.Inspectors
         }
 
         protected override VisualElement BuildUI(VisualElement root)
-        {
+        {   
             HelpBox misconfigurationErrorBox = new();
             root.Add(misconfigurationErrorBox);
             misconfigurationErrorBox.Visible(false);
             
             var typeField = root.CreatePropertyField(_typeProperty);
-            root.CreatePropertyField(_interpolationProperty.Property(nameof(InterpolationInfo.Duration)))
+            var durationField = root.CreatePropertyField(_interpolationProperty.Property(nameof(InterpolationInfo.Duration)))
                 .WithTooltip("The duration (in seconds) this control takes to execute. A value of 0 means instant. This can also be called interpolation.");
             
             CategoricalFoldout menuItemFoldout = new() { text = "Control (Menu)" };
@@ -71,21 +72,7 @@ namespace Flare.Editor.Inspectors
             root.Add(contactFoldout);
 
             var controlFoldouts = new[] { menuItemFoldout, physBoneFoldout, contactFoldout };
-            void UpdateFoldout(ControlType type)
-            {
-                foreach (var foldout in controlFoldouts)
-                    foldout.Visible(false);
-
-                var targetFoldout = type switch
-                {
-                    ControlType.Menu => menuItemFoldout,
-                    ControlType.PhysBone => physBoneFoldout,
-                    ControlType.Contact => contactFoldout,
-                    _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-                };
-
-                targetFoldout.Visible(true);
-            }
+            
             
             typeField.RegisterValueChangeCallback(evt => UpdateFoldout((ControlType)evt.changedProperty.enumValueIndex));
             UpdateFoldout((ControlType)_typeProperty.enumValueIndex);
@@ -119,6 +106,50 @@ namespace Flare.Editor.Inspectors
             _tagInfoView.Build(tagFoldout);
             root.Add(tagFoldout);
 
+            var nonControlFoldouts = new[]
+            {
+                toggleFoldout,
+                propertyFoldout,
+                tagFoldout
+            };
+
+            var trigger = serializedObject
+                .Property(nameof(FlareControl.MenuItem))?
+                .Property(nameof(MenuItemInfo.IsTagTrigger));
+            
+            root.TrackPropertyValue(trigger, _ => UpdateTriggerView());
+
+            void UpdateTriggerView()
+            {
+                if (target is not FlareControl control)
+                    return;
+
+                var triggerView = control.MenuItem.Type is MenuItemType.Button && control.MenuItem.IsTagTrigger;
+                
+                foreach (var foldout in nonControlFoldouts)
+                    foldout.Visible(!triggerView);
+
+                durationField.Enabled(!triggerView);
+            }
+            
+            void UpdateFoldout(ControlType type)
+            {
+                foreach (var foldout in controlFoldouts)
+                    foldout.Visible(false);
+
+                var targetFoldout = type switch
+                {
+                    ControlType.Menu => menuItemFoldout,
+                    ControlType.PhysBone => physBoneFoldout,
+                    ControlType.Contact => contactFoldout,
+                    _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+                };
+
+                targetFoldout.Visible(true);
+            }
+            
+            UpdateTriggerView();
+            
             // Display warning for if any object references are not on this avatar.
             root.schedule.Execute(() =>
             {

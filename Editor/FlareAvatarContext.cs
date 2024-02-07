@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Flare.Models;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using Sucrose;
@@ -22,6 +23,8 @@ namespace Flare.Editor
         private readonly List<FlareTags> _tags = new();
         private readonly List<FlareControl> _controls = new();
         private readonly List<ControlContext> _controlContexts = new();
+        private readonly Dictionary<string, ControlContext> _triggerControls = new();
+        private readonly Dictionary<string, List<SucroseParameter>> _triggerParameters = new();
 
         public IReadOnlyList<FlareTags> Tags => _tags;
         
@@ -43,7 +46,37 @@ namespace Flare.Editor
         
         public void AddControlContext(ControlContext controlContext)
         {
+            var control = controlContext.Control;
             _controlContexts.Add(controlContext);
+            
+            if (control.Type is ControlType.Menu && control.MenuItem.Type is MenuItemType.Button
+                && control.MenuItem.IsTagTrigger && !string.IsNullOrWhiteSpace(control.MenuItem.Tag))
+            {
+                _triggerControls[controlContext.Id] = controlContext;
+            }
+        }
+
+        public ControlContext? GetTriggerContext(string id)
+        {
+            return !_triggerControls.ContainsKey(id) ? null : _triggerControls[id];
+        }
+        
+        public IReadOnlyList<SucroseParameter> GetTriggerParameters(string tag)
+        {
+            if (!_triggerParameters.TryGetValue(tag, out var list))
+                return Array.Empty<SucroseParameter>();
+            
+            return list;
+        }
+
+        public void AddTrigger(string tag, SucroseParameter parameter)
+        {
+            if (!_triggerParameters.TryGetValue(tag, out var list))
+            {
+                list = new List<SucroseParameter>();
+                _triggerParameters[tag] = list;
+            }
+            list.Add(parameter);
         }
 
         public SucroseContainer GetSucrose(BuildContext build)

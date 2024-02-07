@@ -64,10 +64,63 @@ namespace Flare.Editor.Passes
 
             var tagDriverLayer = sucrose.NewLayer().WithName("[Flare] Tag Driver");
             var tagDriverDefaultState = tagDriverLayer.NewState()
-                .WithName("Default / Reset")
+                .WithName("Default")
                 .WithMotion(emptyAnimation)
                 .WithWriteDefaults(flare.PreferredWriteDefaults);
 
+            SucroseParameter? triggeringParameter = null;
+            List<SucroseParameter> everyTriggerParameter = new();
+
+            // Wow, this feels wrong to write
+            foreach (var tag in manager.Tags)
+            {
+                foreach (var triggerParameter in flare.GetTriggerParameters(tag))
+                {
+                    var control = flare.GetTriggerContext(triggerParameter.Name);
+                    if (control is null)
+                        return;
+
+                    var setTo = control.Control.MenuItem.TriggerMode is ToggleMode.Enabled ? 1 : 0;
+                    
+                    var triggerOnState = tagDriverLayer.NewState()
+                        .WithName($"{control.Id} Trigger")
+                        .WithMotion(emptyAnimation)
+                        .WithWriteDefaults(flare.PreferredWriteDefaults);
+                    
+                    var triggerOnParamDriver = triggerOnState.GetStateMachineBehaviour<VRCAvatarParameterDriver>();
+                    
+                    if (tagControlLookup.TryGetValue(tag, out var controls))
+                    {
+                        foreach (var tagControl in controls)
+                        {
+                            triggerOnParamDriver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                            {
+                                type = VRC_AvatarParameterDriver.ChangeType.Set,
+                                name = tagControl.Id,
+                                value = setTo
+                            });
+                        }
+                    }
+
+                    triggeringParameter ??= sucrose.NewParameter()
+                        .WithType(SucroseParameterType.Float)
+                        .WithName("[Flare Tags] Triggering");
+                    
+                    triggerOnParamDriver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = triggeringParameter.Name,
+                        value = 1f
+                    });
+                    
+                    everyTriggerParameter.Add(triggerParameter);
+
+                    tagDriverDefaultState.TransitionTo(triggerOnState)
+                        .WithCondition(triggerParameter, AnimatorConditionMode.Greater, 0.5f)
+                        .Destination.Exit(); // Exit animator
+                }
+            }
+            
             foreach (var (tag, param) in tagDriverParameters)
             {
                 var tagOnState = tagDriverLayer.NewState()
@@ -137,6 +190,31 @@ namespace Flare.Editor.Passes
                     }
                 }
             }
+
+            if (everyTriggerParameter.Count is 0 || triggeringParameter is null)
+                return;
+
+            var resetState = tagDriverLayer.NewState()
+                .WithName("Trigger Reset")
+                .WithMotion(emptyAnimation)
+                .WithWriteDefaults(flare.PreferredWriteDefaults);
+
+            var resetDriver = resetState.GetStateMachineBehaviour<VRCAvatarParameterDriver>();
+            resetDriver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+            {
+                type = VRC_AvatarParameterDriver.ChangeType.Set,
+                name = triggeringParameter.Name,
+                value = 0
+            });
+            
+            var transition = tagDriverDefaultState.TransitionTo(resetState);
+            transition.WithCondition(triggeringParameter, AnimatorConditionMode.Greater, 0.5f);
+            
+            // Wait for all triggers to stop before resetting
+            foreach (var triggerParam in everyTriggerParameter)
+                transition.WithCondition(triggerParam, AnimatorConditionMode.Less, 0.5f);
+
+            transition.Destination.Exit();
         }
     }
 }

@@ -24,5 +24,14 @@ namespace Flare.Models
         [field: Range(0, 1)]
         [field: SerializeField]
         public float DefaultRadialValue { get; private set; }
+        
+        [field: SerializeField]
+        public bool IsTagTrigger { get; private set; }
+
+        [field: SerializeField]
+        public string Tag { get; private set; } = string.Empty;
+        
+        [field: SerializeField]
+        public ToggleMode TriggerMode { get; private set; }
     }
 }

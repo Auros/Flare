@@ -73,6 +73,7 @@ namespace Flare
                 return;
 
             var root = descriptor.transform;
+            
             foreach (var toggle in ObjectToggleCollection.Toggles)
             {
                 var target = toggle.GetTargetTransform();
