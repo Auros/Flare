@@ -58,8 +58,13 @@ namespace Flare.Editor.Passes
                             flare.AddControl(control);
                         
                         break;
+                    
                     case FlareTags tags:
                         flare.AddTags(tags);
+                        break;
+                    
+                    case FlareSettings settings:
+                        flare.PreferredWriteDefaults = settings.WriteDefaults;
                         break;
                 }
             }

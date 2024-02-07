@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using Sucrose;
@@ -29,6 +28,8 @@ namespace Flare.Editor
         public IReadOnlyList<FlareControl> Controls => _controls;
 
         public IReadOnlyList<ControlContext> ControlContexts => _controlContexts;
+
+        public bool PreferredWriteDefaults { get; internal set; }
         
         public void AddTags(FlareTags tags)
         {

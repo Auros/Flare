@@ -5,8 +5,10 @@ using nadena.dev.ndmf;
 using Sucrose;
 using Sucrose.Animation;
 using UnityEditor.Animations;
+using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+using Object = UnityEngine.Object;
 
 namespace Flare.Editor.Passes
 {
@@ -19,7 +21,15 @@ namespace Flare.Editor.Passes
             var flare = context.GetState<FlareAvatarContext>();
             var sucrose = flare.GetSucrose(context);
 
-            var emptyAnimation = sucrose.NewAnimation(builder => _ = builder);
+            // Create a dummy object because according to Kayla empty animations cause issues with WD OFF
+            GameObject dummyObject = new("[Flare] Dummy Object (Ignore)"); // surely no one will name there thing this
+            dummyObject.transform.SetParent(context.AvatarRootTransform);
+            var emptyAnimation = sucrose.NewAnimation(builder =>
+            {
+                builder.WithName("[Flare] Dummy Animation for Tag Driver");
+                builder.WithBinaryCurve<GameObject>("m_IsActive", 0, 1);
+            });
+            Object.DestroyImmediate(dummyObject);
             
             Dictionary<string, SucroseParameter> tagDriverParameters = new();
             Dictionary<string, List<ControlContext>> tagControlLookup = new();
@@ -53,12 +63,23 @@ namespace Flare.Editor.Passes
             }
 
             var tagDriverLayer = sucrose.NewLayer().WithName("[Flare] Tag Driver");
-            var tagDriverDefaultState = tagDriverLayer.NewState().WithName("Default / Reset").WithMotion(emptyAnimation);
+            var tagDriverDefaultState = tagDriverLayer.NewState()
+                .WithName("Default / Reset")
+                .WithMotion(emptyAnimation)
+                .WithWriteDefaults(flare.PreferredWriteDefaults);
 
             foreach (var (tag, param) in tagDriverParameters)
             {
-                var tagOnState = tagDriverLayer.NewState().WithName($"{tag} Activator").WithMotion(emptyAnimation);
-                var tagOffState = tagDriverLayer.NewState().WithName($"{tag} Deactivator").WithMotion(emptyAnimation);
+                var tagOnState = tagDriverLayer.NewState()
+                    .WithName($"{tag} Activator")
+                    .WithMotion(emptyAnimation)
+                    .WithWriteDefaults(flare.PreferredWriteDefaults);
+                
+                var tagOffState = tagDriverLayer
+                    .NewState()
+                    .WithName($"{tag} Deactivator")
+                    .WithMotion(emptyAnimation)
+                    .WithWriteDefaults(flare.PreferredWriteDefaults);
 
                 // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
                 if (tagControlLookup.TryGetValue(tag, out var controls))

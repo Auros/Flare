@@ -56,7 +56,7 @@ namespace Flare.Editor.Inspectors
             
             var typeField = root.CreatePropertyField(_typeProperty);
             root.CreatePropertyField(_interpolationProperty.Property(nameof(InterpolationInfo.Duration)))
-                .WithTooltip("The duration (in seconds) this control takes to execute. A value of \"0\" means instant. This can also be called interpolation.");
+                .WithTooltip("The duration (in seconds) this control takes to execute. A value of 0 means instant. This can also be called interpolation.");
             
             CategoricalFoldout menuItemFoldout = new() { text = "Control (Menu)" };
             _menuItemControlView?.Build(menuItemFoldout);

@@ -53,12 +53,13 @@ namespace Flare.Editor.Views
                 .WithTooltip("The icon used when displaying this item in the hand menu.");
 
             root.CreatePropertyField(_isSavedProperty)
-                .WithTooltip("Is the control value saved between worlds?");
-
-            var defaultStateField = root.CreatePropertyField(_defaultStateProperty).WithLabel("Default Toggle Value")
-                .WithTooltip("Is this menu item ON or OFF by default?");
+                .WithTooltip("Is the control value saved between worlds?")
+                .WithMarginTop(2f); // (Fix) Toggle property fields are annoyingly smaller than others.
             
-            defaultStateField.style.marginTop = 2f; // (Fix) Toggle property fields are annoyingly smaller than others.
+            var defaultStateField = root.CreatePropertyField(_defaultStateProperty)
+                .WithLabel("Default Toggle Value")
+                .WithTooltip("Is this menu item ON or OFF by default?")
+                .WithMarginTop(2f); // (Fix) Toggle property fields are annoyingly smaller than others.
             
             var defaultRadialValueField = root.CreatePropertyField(_defaultRadialValueProperty);
 
