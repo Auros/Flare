@@ -260,7 +260,9 @@ namespace Flare.Editor.Windows
             container.style.height = new StyleLength(StyleKeyword.Null);
             
             list.selectionType = SelectionType.None;
-            searchField.value = "t:Blendshape ";
+
+            var previousProperty = _target?.Property(nameof(PropertyInfo.Name)).stringValue;
+            searchField.value = string.IsNullOrWhiteSpace(previousProperty) ? "t:Blendshape " : previousProperty;
         }
 
         private void OnLostFocus()
