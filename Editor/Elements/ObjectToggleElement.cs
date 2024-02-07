@@ -153,8 +153,8 @@ namespace Flare.Editor.Elements
             
             // Ensure that the enum dropdowns are colored properly when initializing new toggle objects.
             // Without this sometimes they won't be colored.
-            if (_menuModeField.value is ToggleMode menuMode)
-                OnModeFieldChanged(_menuModeField, menuMode);
+            if (_menuModeField.value is ToggleMenuState menuMode)
+                OnModeFieldChanged(_menuModeField, (ToggleMode)(int)menuMode);
             
             if (_toggleModeField.value is ToggleMode toggleMode)
                 OnModeFieldChanged(_toggleModeField, toggleMode);
@@ -162,8 +162,8 @@ namespace Flare.Editor.Elements
             if (_alternateModeField.value is ToggleMode altMenuMode)
                 OnModeFieldChanged(_alternateModeField, altMenuMode);
             
-            if (_alternateModeDisplay.value is ToggleMode altToggleMode)
-                OnModeFieldChanged(_alternateModeDisplay, altToggleMode);
+            if (_alternateModeDisplay.value is ToggleMenuState altToggleMode)
+                OnModeFieldChanged(_alternateModeDisplay, (ToggleMode)(int)altToggleMode);
         }
 
         /// <summary>
