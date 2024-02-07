@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Flare.Editor.Models;
 using Flare.Editor.Services;
@@ -7,7 +8,6 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Flare.Editor.Passes
 {
@@ -16,6 +16,8 @@ namespace Flare.Editor.Passes
     /// </summary>
     internal class ContainerizationPass : Pass<ContainerizationPass>
     {
+        private static readonly Dictionary<string, Type?> _qualifierToType = new();
+        
         public override string DisplayName => "Containerization";
 
         protected override void Execute(BuildContext context)
@@ -23,6 +25,28 @@ namespace Flare.Editor.Passes
             var avatarRoot = context.AvatarRootTransform;
             var flare = context.GetState<FlareAvatarContext>();
 
+            // (one (1) set of property values). it expensive fr
+            // I have an idea on how to optimize this. Generating the material properties is by far
+            // the costliest step, so we can first build a list of all the materials on the avatar, compute
+            // the bindings for each unique(!) material, and build the path manually from every renderer.
+            // Then we can grab the bindings for every component that doesn't use a renderer. We would
+            // only be able to do it for GameObjects with renderers WITH components that we know (Transform, etc.)
+            // Perhaps we can optimistically collect Type-Binding groups if we ran the renderer exclusionary search
+            // first, and then hope that renderers don't contain other materials. At that point if there's components
+            // we don't recognize we could run the binding on that specific... fuck as I'm writing this I realized we
+            // can do this in a smarter way. I know if you try to create a binding on a path + component that doesn't
+            // exist it HARD CRASHES Unity, but maybe the name doesn't matter. We can manually generate the bindings
+            // for every GameObject that has a component with the context type of the property. Let's give it a go...
+            //
+            // 12 minutes later and well I'll be damned it works. So it turns out the hard crash only occures when a
+            // non animatable (non-component) object is passed in as the context. ah, eto.... EHHH?
+            //
+            //BindingService? exclusiveBinder = null;
+            //ILookup<string, FlareProperty>? exclusiveBindings = null;
+
+            // We don't need the property gathering from the binder, just the value fetcher.
+            BindingService binder = new(context.AvatarRootObject, Array.Empty<GameObject>());
+            
             foreach (var control in flare.Controls)
             {
                 var id = GetId(control, flare);
@@ -77,49 +101,60 @@ namespace Flare.Editor.Passes
 
                 foreach (var group in control.PropertyGroupCollection.Groups)
                 {
-                    var root = context.AvatarRootObject;
-                    
-                    // ReSharper disable once ConvertIfStatementToSwitchStatement
-                    if (group.SelectionType is PropertySelectionType.Normal)
+                    using (ListPool<PropertyInfo>.Get(out var properties))
                     {
-                        // This could be more optimized, but for now I'll leave it like this for simplicity (I'm tired.)
-                        var include = group.Inclusions;
-                        BindingService binder = new(root, include);
-                        foreach (var prop in group.Properties)
-                        {
-                            BindAnimatablePropertiesFast(controlContext, binder, prop);
-                        }
-
-                    }
-                    else if (group.SelectionType is PropertySelectionType.Avatar)
-                    {
-                        var exclude = group.Exclusions;
+                        properties.AddRange(group.Properties);
                         
-                        BindingService binder = new(root, exclude, typeof(Renderer), typeof(VRCPhysBone));
-                        var bindings = binder.GetPropertyBindings(group.Properties, false)
-                            .Where(b => b.GameObject != root)
-                            .ToLookup(k => k.Name);
-
-                        foreach (var prop in group.Properties)
+                        // Full-avatar binding search
+                        if (group.SelectionType is PropertySelectionType.Avatar)
                         {
-                            foreach (var animatable in bindings[prop.Name])
+                            foreach (var property in group.Properties)
                             {
-                                // Skip over properties with mismatching types.
-                                if (animatable.Type != prop.ValueType)
-                                    continue;
+                                var propertyType = GetContextType(property);
                                 
-                                BindPropertyToAnimatable(controlContext, binder, prop, animatable);
+                                // Make sure to exclude exclusions
+                                var candidates = avatarRoot.GetComponentsInChildren(propertyType)
+                                    .Where(c => !group.Exclusions.Contains(c.gameObject));
+                                
+                                properties.AddRange(candidates.Select(c => new PropertyInfo
+                                {
+                                    Name = property.Name,
+                                    ColorType = property.ColorType,
+                                    ValueType = property.ValueType,
+                                    ContextType = property.ContextType,
+                                    Path = c.transform.GetAnimatablePath(avatarRoot),
+                                    Analog = property.Analog,
+                                    Vector = property.Vector,
+                                    OverrideDefaultValue = property.OverrideDefaultValue,
+                                    OverrideDefaultAnalog = property.OverrideDefaultAnalog,
+                                    OverrideDefaultVector = property.OverrideDefaultVector
+                                }));
                             }
                         }
+                        
+                        foreach (var prop in properties)
+                            BindAnimatablePropertiesFast(controlContext, binder, prop);
                     }
                 }
             }
         }
 
+        private static Type? GetContextType(PropertyInfo info)
+        {
+            // ReSharper disable once InvertIf
+            if (!_qualifierToType.TryGetValue(info.ContextType, out var type))
+            { 
+                // Allocations to this can and will add up, this boy loves triggering GC.Alloc and GC.Release
+                type = Type.GetType(info.ContextType);
+                _qualifierToType[info.ContextType] = type;
+            }
+            return type;
+        }
+
         // I needed this to be faster so I couldn't directly use the BindingService to get the properties.
         private static void BindAnimatablePropertiesFast(ControlContext controlContext, BindingService binder, PropertyInfo prop)
         {
-            var type = Type.GetType(prop.ContextType);
+            var type = GetContextType(prop);
             if (type == null)
             {
                 // MAYBE: Warn?

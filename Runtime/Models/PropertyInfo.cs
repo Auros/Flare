@@ -22,21 +22,21 @@ namespace Flare.Models
         public string ContextType { get; set; } = string.Empty;
 
         [field: SerializeField]
-        public float Analog { get; private set; }
+        public float Analog { get; set; }
 
         [field: SerializeField]
-        public Vector4 Vector { get; private set; }
+        public Vector4 Vector { get; set; }
 
         [field: SerializeField]
-        public ControlState State { get; private set; }
+        public ControlState State { get; set; }
 
         [field: SerializeField]
-        public bool OverrideDefaultValue { get; private set; }
+        public bool OverrideDefaultValue { get; set; }
 
         [field: SerializeField]
-        public float OverrideDefaultAnalog { get; private set; }
+        public float OverrideDefaultAnalog { get; set; }
 
         [field: SerializeField]
-        public Vector4 OverrideDefaultVector { get; private set; }
+        public Vector4 OverrideDefaultVector { get; set; }
     }
 }
