@@ -141,6 +141,7 @@ namespace Flare.Editor
             sucrose.NewLayer()
                 .WithName("[Flare] Frame Time Layer")
                 .NewState()
+                .WithWriteDefaults(PreferredWriteDefaults)
                 .WithName("Time")
                 .WithMotion(clip =>
                 {

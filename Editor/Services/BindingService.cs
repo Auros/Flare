@@ -13,7 +13,7 @@ namespace Flare.Editor.Services
     {
         private readonly Type[] _types;
         private readonly GameObject _root;
-        private readonly GameObject[] _gameObjects;
+        private readonly GameObject?[] _gameObjects;
         private readonly Dictionary<Type, string> _assemblyQualifiedNames = new();
         private readonly bool _gameObjectSearch;
         
@@ -24,7 +24,7 @@ namespace Flare.Editor.Services
         /// <param name="root">The binding root.</param>
         /// <param name="gameObjects">The GameObjects to ignore.</param>
         /// <param name="types">The types to search for. If </param>
-        public BindingService(GameObject root, GameObject[] gameObjects, params Type[] types)
+        public BindingService(GameObject root, GameObject?[] gameObjects, params Type[] types)
         {
             _root = root;
             _types = types;
@@ -36,7 +36,7 @@ namespace Flare.Editor.Services
         /// </summary>
         /// <param name="root">The binding root.</param>
         /// <param name="gameObjects">The GameObjects to get the property bindings from.</param>
-        public BindingService(GameObject root, params GameObject[] gameObjects)
+        public BindingService(GameObject root, params GameObject?[] gameObjects)
         {
             _root = root;
             _types = Array.Empty<Type>();
@@ -102,7 +102,7 @@ namespace Flare.Editor.Services
         {
             GameObject[] objectsToSearch;
             if (_gameObjects.Length is not 0 && _gameObjectSearch)
-                objectsToSearch = _gameObjects.Where(g => g).ToArray();
+                objectsToSearch = _gameObjects.Where(g => g!).Select(g => g!).ToArray();
             else if (_types.Length is not 0)
             {
                 objectsToSearch = _types.SelectMany(type =>

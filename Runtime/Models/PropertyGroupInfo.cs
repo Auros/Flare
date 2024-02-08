@@ -10,10 +10,10 @@ namespace Flare.Models
         public PropertySelectionType SelectionType { get; private set; }
 
         [field: SerializeField]
-        public GameObject[] Inclusions { get; private set; } = Array.Empty<GameObject>();
+        public GameObject?[] Inclusions { get; private set; } = Array.Empty<GameObject?>();
         
         [field: SerializeField]
-        public GameObject[] Exclusions { get; private set; } = Array.Empty<GameObject>();
+        public GameObject?[] Exclusions { get; private set; } = Array.Empty<GameObject?>();
 
         [field: SerializeField]
         public PropertyInfo[] Properties { get; private set; } = Array.Empty<PropertyInfo>();

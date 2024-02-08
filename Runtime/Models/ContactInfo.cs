@@ -8,6 +8,6 @@ namespace Flare.Models
     internal class ContactInfo
     {
         [field: SerializeField]
-        public VRCContactReceiver ContactReceiver { get; private set; } = null!;
+        public VRCContactReceiver? ContactReceiver { get; private set; }
     }
 }

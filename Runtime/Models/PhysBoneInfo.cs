@@ -8,7 +8,7 @@ namespace Flare.Models
     internal class PhysBoneInfo
     {
         [field: SerializeField]
-        public VRCPhysBone PhysBone { get; private set; } = null!;
+        public VRCPhysBone? PhysBone { get; private set; }
 
         [field: SerializeField]
         public PhysBoneParameterType ParameterType { get; private set; }
