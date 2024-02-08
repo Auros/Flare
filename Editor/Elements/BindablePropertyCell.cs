@@ -137,10 +137,13 @@ namespace Flare.Editor.Elements
         }
 
         public void SetData(FlareProperty property, object currentValue, Action onSelect, Action? onJump,
-            Action? onVectorX, Action? onVectorY, Action? onVectorZ, Action? onVectorW)
+            Action? onVectorX, Action? onVectorY, Action? onVectorZ, Action? onVectorW, bool includePath)
         {
             _propertyNameLabel.text = $"<b>{property.Name}</b>";
-            _propertyContextLabel.text = $"{property.ContextType.Name} ({property.Path})";
+            _propertyContextLabel.text = $"{property.ContextType.Name}";
+            if (includePath)
+                _propertyContextLabel.text += $" ({property.Path})";
+            
             _propertyContextLabel.tooltip = property.Path;
 
             var valueString = currentValue.ToString();

@@ -10,7 +10,6 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 using PropertyInfo = Flare.Models.PropertyInfo;
 
@@ -87,7 +86,7 @@ namespace Flare.Editor.Windows
 
             var binder = propertyGroup.SelectionType is PropertySelectionType.Normal ?
                 new BindingService(avatarGameObject, objects)
-                : new BindingService(avatarGameObject, objects, typeof(Renderer), typeof(VRCPhysBone));
+                : new BindingService(avatarGameObject, objects, typeof(Renderer), typeof(Behaviour));
 
             ToolbarSearchField searchField = new();
             root.Add(searchField);
@@ -100,7 +99,7 @@ namespace Flare.Editor.Windows
 
             var bindingSearch = binder.GetPropertyBindings().Where(b => b.GameObject != avatarGameObject);
             if (propertyGroup.SelectionType is PropertySelectionType.Avatar)
-                bindingSearch = bindingSearch.GroupBy(p => p.Name).Select(g => g.First());
+                bindingSearch = bindingSearch.GroupBy(p => p.QualifiedId).Select(g => g.First());
 
             var bindings = bindingSearch.ToArray();
             var items = bindings.ToList();
@@ -144,15 +143,19 @@ namespace Flare.Editor.Windows
                     // Predictive property value assignment
                     if (property.serializedObject.targetObject is FlareControl { Type: ControlType.Menu } control)
                     {
-                        var menuInfo = control.MenuItem;
-                        var oppositeTarget = binding.Source is FlarePropertySource.Blendshape ? 100f : 1f;
-                        var defaultValue = binder.GetPropertyValue<float>(binding);
-                        if (oppositeTarget >= defaultValue && defaultValue >= 0)
-                            predictiveValue = defaultValue is 0 ? oppositeTarget : 0f;
+                        if (type is PropertyValueType.Float)
+                        {
+                            var menuInfo = control.MenuItem;
+                            var oppositeTarget = binding.Source is FlarePropertySource.Blendshape ? 100f : 1f;
+                        
+                            var defaultValue = binder.GetPropertyValue<float>(binding);
+                            if (oppositeTarget >= defaultValue && defaultValue >= 0)
+                                predictiveValue = defaultValue is 0 ? oppositeTarget : 0f;
 
-                        var predictiveDisable = menuInfo.Type is MenuItemType.Toggle && menuInfo.DefaultState;
-                        property.Property(nameof(PropertyInfo.State))
-                            .SetValue(predictiveDisable ? ControlState.Disabled : ControlState.Enabled);
+                            var predictiveDisable = menuInfo.Type is MenuItemType.Toggle && menuInfo.DefaultState;
+                            property.Property(nameof(PropertyInfo.State))
+                                .SetValue(predictiveDisable ? ControlState.Disabled : ControlState.Enabled);
+                        }
                     }
                     
                     switch (type)
@@ -195,7 +198,8 @@ namespace Flare.Editor.Windows
                     isVector ? () => HandlePseudoProperty(0) : null,
                     isVector ? () => HandlePseudoProperty(1) : null,
                     isTriOrQuadVector ? () => HandlePseudoProperty(2) : null,
-                    binding.Type is PropertyValueType.Vector4 ? () => HandlePseudoProperty(3) : null
+                    binding.Type is PropertyValueType.Vector4 ? () => HandlePseudoProperty(3) : null,
+                    propertyGroup.SelectionType is not PropertySelectionType.Avatar
                 );
             });
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Flare.Editor.Editor.Extensions;
 using Flare.Editor.Extensions;
 using Flare.Editor.Models;
@@ -8,6 +9,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace Flare.Editor.Elements
 {
@@ -16,6 +18,7 @@ namespace Flare.Editor.Elements
         private readonly Label _nameLabel;
         private readonly PaneMenu _paneMenu;
         private readonly Button _selectButton;
+        private readonly ObjectField _referenceField;
         private readonly CombinatoryFieldElement _valuePreview;
         private readonly CombinatoryFieldElement _valueSelector;
         private readonly CombinatoryFieldElement _overrideValueSelector;
@@ -32,6 +35,7 @@ namespace Flare.Editor.Elements
             _valueSelector = new CombinatoryFieldElement();
             _overrideValueSelector = new CombinatoryFieldElement();
             _controlStateDropdown = new EnumField();
+            _referenceField = new ObjectField();
             
             var topContainer = this.CreateHorizontal().WithMargin(4f);
             topContainer.Add(_nameLabel);
@@ -39,10 +43,12 @@ namespace Flare.Editor.Elements
             topContainer.Add(_paneMenu);
             
             _valuePreview.Enabled(false);
+            _referenceField.Enabled(false);
             _valuePreview.SetLabel("Current Value");
             _valueSelector.SetLabel("Target Value");
             _overrideValueSelector.SetLabel("Default Value");
             _controlStateDropdown.label = "Control State";
+            _referenceField.AddToClassList(ObjectField.alignedFieldUssClassName);
             _controlStateDropdown.AddToClassList(ObjectField.alignedFieldUssClassName);
             _controlStateDropdown.RegisterValueChangedCallback(evt =>
             {
@@ -51,12 +57,14 @@ namespace Flare.Editor.Elements
                 
                 OnStateFieldChanged(_controlStateDropdown, (ControlState)evt.newValue);
             });
+            _referenceField.label = "Reference Object";
             
             _paneMenu.style.marginLeft = 5f;
             _paneMenu.WithWidth(8f).WithHeight(16f);
             _nameLabel.WithFontStyle(FontStyle.Bold).WithFontSize(13f);
             
             Add(topContainer);
+            Add(_referenceField);
             Add(_valuePreview);
             Add(_overrideValueSelector);
             Add(_valueSelector);
@@ -102,11 +110,17 @@ namespace Flare.Editor.Elements
             var pathProperty = property.Property(nameof(PropertyInfo.Path));
             var stateProperty = property.Property(nameof(PropertyInfo.State));
             var overrideProperty = property.Property(nameof(PropertyInfo.OverrideDefaultValue));
+            var contextTypeProperty = property.Property(nameof(PropertyInfo.ContextType));
+            var contextType = Type.GetType(contextTypeProperty.stringValue);
 
             _nameLabel.TrackPropertyValue(property, prop =>
             {
                 var propertyName = prop.Property(nameof(PropertyInfo.Name)).stringValue;
                 var propertyPath = prop.Property(nameof(PropertyInfo.Path)).stringValue;
+                
+                contextType = Type.GetType(contextTypeProperty.stringValue);
+                _referenceField.value = GetPropertyReference(propertyPath, contextType);
+                _referenceField.Visible(!string.IsNullOrWhiteSpace(propertyName));
                 _nameLabel.text = GetDisplayName(propertyName);
                 _nameLabel.tooltip = propertyPath;
             });
@@ -145,7 +159,9 @@ namespace Flare.Editor.Elements
             _nameLabel.tooltip = pathProperty.stringValue;
             _selectButton.Visible(string.IsNullOrEmpty(propertyName));
             _controlStateDropdown.Visible(!string.IsNullOrEmpty(propertyName));
-
+            _referenceField.Visible(!string.IsNullOrWhiteSpace(propertyName));
+            _referenceField.value = GetPropertyReference(pathProperty.stringValue, contextType);
+            
             _selectButton.clicked -= _selector;
             _selector = () => ShowPropertyWindow(property);
             _selectButton.clicked += _selector;
@@ -180,6 +196,15 @@ namespace Flare.Editor.Elements
                 return;
             
             PropertySelectorWindow.Present(property);
+        }
+
+        private static Object? GetPropertyReference(string path, Type? context)
+        {
+            if (context == null)
+                return null;
+            
+            var go = GameObject.Find(path);
+            return go == null ? null : go.GetComponent(context);
         }
     }
 }

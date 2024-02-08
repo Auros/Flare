@@ -8,6 +8,7 @@ namespace Flare.Editor.Models
     internal class FlareProperty
     {
         private string? _id;
+        private string? _internalId;
 
         public string Id => _id ??= $"{Path}/{Name}";
 
@@ -28,6 +29,9 @@ namespace Flare.Editor.Models
         private FlarePseudoProperty PseudoProperty { get; }
         
         internal IReadOnlyList<FlarePseudoProperty>? PseudoProperties { get; }
+        
+        // Only used for matching in UI, basically is a unique property name for a specific type and name.
+        public string QualifiedId => _internalId ??= $"{Name}::{ContextType.AssemblyQualifiedName}";
 
         public int Length => PseudoProperties?.Count ?? 1;
 

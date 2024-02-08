@@ -5,6 +5,7 @@ using Flare.Editor.Models;
 using Flare.Models;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDKBase;
 
 namespace Flare.Editor.Services
 {
@@ -128,13 +129,17 @@ namespace Flare.Editor.Services
             {
                 return AnimationUtility.GetAnimatableBindings(obj, _root).Select(binding =>
                 {
+                    // Ignore EditorOnly properties.
+                    if (typeof(IEditorOnly).IsAssignableFrom(binding.type))
+                        return null;
+                    
                     var type = AnimationUtility.GetEditorCurveValueType(_root, binding);
                     
                     // For the time being we'll only be working with the primitive float, int, and bool properties.
                     // In the future we may be able to support others like Materials and such.
                     if (type != typeof(float) && type != typeof(int) && type != typeof(bool))
                         return null;
-
+                    
                     if (preSearch == null)
                         return new FlarePseudoProperty(type, obj, binding);
                     
@@ -244,14 +249,14 @@ namespace Flare.Editor.Services
             // The Dictionary is for efficiency with larger amounts of properties (once again).
             var includedPseudoSearch = properties
                 .SelectMany(p => p.PseudoProperties)
-                .GroupBy(p => p.Id)
+                .GroupBy(p => p.TrueId)
                 .Select(p => p.First())
-                .ToDictionary(p => p.Id, p => p);
+                .ToDictionary(p => p.TrueId, p => p);
             
             foreach (var pseudoProperty in pseudoProperties)
             {
                 // Skip over properties we added in the last step.
-                if (includedPseudoSearch.ContainsKey(pseudoProperty.Id))
+                if (includedPseudoSearch.ContainsKey(pseudoProperty.TrueId))
                     continue;
 
                 var type = pseudoProperty.Type;
