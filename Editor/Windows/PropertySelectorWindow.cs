@@ -145,12 +145,10 @@ namespace Flare.Editor.Windows
                     if (property.serializedObject.targetObject is FlareControl { Type: ControlType.Menu } control)
                     {
                         var menuInfo = control.MenuItem;
-                        if (binding.Source is FlarePropertySource.Blendshape)
-                        {
-                            var defaultValue = binder.GetPropertyValue<float>(binding);
-                            predictiveValue = defaultValue is 0 ? 100f : 0f;
-                            // property.Property(nameof(PropertyInfo.Analog)).SetValue(predictiveValue);
-                        }
+                        var oppositeTarget = binding.Source is FlarePropertySource.Blendshape ? 100f : 1f;
+                        var defaultValue = binder.GetPropertyValue<float>(binding);
+                        if (oppositeTarget >= defaultValue && defaultValue >= 0)
+                            predictiveValue = defaultValue is 0 ? oppositeTarget : 0f;
 
                         var predictiveDisable = menuInfo.Type is MenuItemType.Toggle && menuInfo.DefaultState;
                         property.Property(nameof(PropertyInfo.State))

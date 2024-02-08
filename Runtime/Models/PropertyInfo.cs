@@ -7,36 +7,36 @@ namespace Flare.Models
     internal class PropertyInfo
     {
         [field: SerializeField]
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; internal set; } = string.Empty;
 
         [field: SerializeField]
-        public string Path { get; set; } = string.Empty;
+        public string Path { get; internal set; } = string.Empty;
 
         [field: SerializeField]
-        public PropertyValueType ValueType { get; set; }
+        public PropertyValueType ValueType { get; internal set; }
 
         [field: SerializeField]
-        public PropertyColorType ColorType { get; set; }
+        public PropertyColorType ColorType { get; internal set; }
 
         [field: SerializeField]
-        public string ContextType { get; set; } = string.Empty;
+        public string ContextType { get; internal set; } = string.Empty;
 
         [field: SerializeField]
-        public float Analog { get; set; }
+        public float Analog { get; internal set; }
 
         [field: SerializeField]
-        public Vector4 Vector { get; set; }
+        public Vector4 Vector { get; internal set; }
 
         [field: SerializeField]
-        public ControlState State { get; set; }
+        public ControlState State { get; internal set; }
 
         [field: SerializeField]
-        public bool OverrideDefaultValue { get; set; }
+        public bool OverrideDefaultValue { get; internal set; }
 
         [field: SerializeField]
-        public float OverrideDefaultAnalog { get; set; }
+        public float OverrideDefaultAnalog { get; internal set; }
 
         [field: SerializeField]
-        public Vector4 OverrideDefaultVector { get; set; }
+        public Vector4 OverrideDefaultVector { get; internal set; }
     }
 }
