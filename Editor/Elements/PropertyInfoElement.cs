@@ -203,7 +203,11 @@ namespace Flare.Editor.Elements
             if (context == null)
                 return null;
             
+            
             var go = GameObject.Find(path);
+            if (context == typeof(GameObject) && go)
+                return go!;
+            
             return go == null ? null : go.GetComponent(context);
         }
     }

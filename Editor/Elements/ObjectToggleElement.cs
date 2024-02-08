@@ -183,8 +183,15 @@ namespace Flare.Editor.Elements
             var altModeProperty = property.Property(nameof(ObjectToggleInfo.AlternateMode));
             var overrideProperty = property.Property(nameof(ObjectToggleInfo.OverrideDefaultValue)).Copy();
 
+            bool ran = false;
             _objectField.RegisterValueChangedCallback(evt =>
             {
+                if (!ran)
+                {
+                    ran = true;
+                    return;
+                }
+                
                 if (evt.previousValue != null || evt.newValue == null)
                     return;
 

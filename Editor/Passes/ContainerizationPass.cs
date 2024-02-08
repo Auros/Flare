@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Flare.Editor.Models;
 using Flare.Editor.Services;
 using Flare.Models;
@@ -8,6 +9,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
+using PropertyInfo = Flare.Models.PropertyInfo;
 
 namespace Flare.Editor.Passes
 {
@@ -57,7 +59,7 @@ namespace Flare.Editor.Passes
                 foreach (var toggle in control.ObjectToggleCollection.Toggles)
                 {
                     // Ignore non-toggleable properties.
-                    if (toggle.Target is null)
+                    if (toggle.Target == null)
                         continue;
                     
                     var name = "m_IsActive";
@@ -77,6 +79,19 @@ namespace Flare.Editor.Passes
                         continue;
                     }
 
+                    bool? overrideActivity = null;
+                    if (control.Type is ControlType.Menu && control.MenuItem.Type is MenuItemType.Toggle or MenuItemType.Radial)
+                    {
+                        overrideActivity = (int)toggle.MenuMode is not 1 ==
+                                           (control.MenuItem.Type is MenuItemType.Toggle
+                                               ? control.MenuItem.DefaultState
+                                               : control.MenuItem.DefaultRadialValue > 0);
+
+                        overrideActivity = overrideActivity.Value
+                            ? toggle.ToggleMode is ToggleMode.Enabled
+                            : toggle.AlternateMode is ToggleMode.Enabled;
+                    }
+                    
                     float defaultFloatValue;
                     float inverseFloatValue;
                     if (toggle.MenuMode is ToggleMenuState.Active)
@@ -94,6 +109,23 @@ namespace Flare.Editor.Passes
                     {
                         name = "m_Enabled";
                         type = toggle.Target.GetType();
+
+                        if (overrideActivity.HasValue)
+                        {
+                            switch (toggle.Target)
+                            {
+                                case Renderer renderer:
+                                    renderer.enabled = overrideActivity.Value;
+                                    break;
+                                case Behaviour behaviour:
+                                    behaviour.enabled = overrideActivity.Value;
+                                    break;
+                            }
+                        }
+                    }
+                    else if (overrideActivity.HasValue && toggle.Target is GameObject go)
+                    {
+                        go.SetActive(overrideActivity.Value);
                     }
                     
                     AnimatableBinaryProperty property = new(type, path, name, defaultFloatValue, inverseFloatValue);
@@ -112,9 +144,18 @@ namespace Flare.Editor.Passes
                             foreach (var property in group.Properties)
                             {
                                 var propertyType = GetContextType(property);
+                                if (propertyType == null)
+                                    continue;
+                                
+                                // Specifically do not support the GameObject toggle in SelectionType Avatar
+                                // (why would you want to toggle on and off *every gameobject*?
+                                // + its annoying to impl
+                                // If someone reading this wants this feature just hmu -Auros
+                                if (propertyType == typeof(GameObject))
+                                    continue; // MAYBE: Warn unsupported feature?
                                 
                                 // Make sure to exclude exclusions
-                                var candidates = avatarRoot.GetComponentsInChildren(propertyType)
+                                var candidates = avatarRoot.GetComponentsInChildren(propertyType, true)
                                     .Where(c => !group.Exclusions.Contains(c.gameObject));
                                 
                                 properties.AddRange(candidates.Select(c => new PropertyInfo
@@ -329,6 +370,12 @@ namespace Flare.Editor.Passes
                 var targetDefaultValue = prop.State is ControlState.Enabled ? defaultValue : inverseValue;
                 var targetInverseValue = prop.State is ControlState.Enabled ? inverseValue : defaultValue;
 
+                if (prop.OverrideDefaultValue)
+                {
+                    // Automatically assign these values on the base on upload for avatar preview.
+                    TryAssignDefaultToAvatar(defaultValue, type, prop, name, index);
+                }
+
                 AnimatableBinaryProperty property = new(type, path, name, targetDefaultValue, targetInverseValue);
                 controlContext.AddProperty(property);
             }
@@ -354,5 +401,141 @@ namespace Flare.Editor.Passes
                 }
             }
         }
+
+        private static readonly Dictionary<Type, FieldInfo[]> _fields = new();
+        
+        private static void TryAssignDefaultToAvatar(float value, Type contextType, PropertyInfo propertyInfo, string propertyName, int index)
+        {
+            // I have no idea the best way to do this,
+            // and I also don't know how to do it for materials.
+            var source = GameObject.Find(propertyInfo.Path);
+            if (source == null)
+                return;
+
+            if (contextType == typeof(GameObject))
+            {
+                if (propertyName == "m_IsActive")
+                    source.gameObject.SetActive(value >= 0.5f);
+                
+                return;
+            }
+
+            if (contextType == typeof(Transform))
+            {
+                var transform = source.transform;
+                switch (propertyInfo.Name)
+                {
+                    case "m_LocalPosition":
+                    {
+                        var localPosition = transform.localPosition;
+                        localPosition[index] = value;
+                        transform.localPosition = localPosition;
+                        break;
+                    }
+                    case "m_LocalRotation":
+                    {
+                        var localRotation = transform.localRotation;
+                        localRotation[index] = value;
+                        transform.localRotation = localRotation;
+                        break;
+                    }
+                    case "m_LocalScale":
+                    {
+                        var localScale = transform.localScale;
+                        localScale[index] = value;
+                        transform.localScale = localScale;
+                        break;
+                    }
+                }
+                return;
+            }
+
+            if (propertyInfo.Name == "m_Enabled")
+            {
+                var component = source.GetComponent(contextType);
+                switch (component)
+                {
+                    case Behaviour behaviour:
+                        behaviour.enabled = value > 0.5f;
+                        break;
+                    case Renderer renderer:
+                        renderer.enabled = value > 0.5f;
+                        break;
+                }
+                return;
+            }
+
+            const string blendShapeId = "blendShape.";
+            if (typeof(SkinnedMeshRenderer).IsAssignableFrom(contextType) && propertyName.StartsWith(blendShapeId))
+            {
+                var blendShapeName = propertyName[blendShapeId.Length..];
+                var skinnedMeshRenderer = source.GetComponent<SkinnedMeshRenderer>();
+                
+                if (skinnedMeshRenderer == null) // who knows maybe something funky happened
+                    return;
+
+                var blendShapeIndex = skinnedMeshRenderer.sharedMesh.GetBlendShapeIndex(blendShapeName);
+                if (blendShapeIndex is -1)
+                    return;
+                
+                skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, value);
+                
+                return;
+            }
+            
+            var contexts = ListPool<Component>.Get();
+            source.GetComponents(contextType, contexts);
+            
+            foreach (var context in contexts)
+            {
+                if (!_fields.TryGetValue(contextType, out var fields))
+                {
+                    fields = contextType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    _fields.Add(contextType, fields);
+                }
+
+                if (fields.Length is 0)
+                    continue;
+
+                var field = fields[0];
+                var fieldType = field.FieldType;
+                
+                if (fieldType == typeof(float))
+                    field.SetValue(context, value);
+                else if (fieldType == typeof(int))
+                    field.SetValue(context, (int)value);
+                else if (fieldType == typeof(bool))
+                    field.SetValue(context, value >= 0.5f);
+                else if (propertyInfo.ValueType is PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4)
+                {
+                    if (fieldType == typeof(Vector2))
+                    {
+                        var vector = (Vector2)field.GetValue(context);
+                        vector[index] = value;
+                        field.SetValue(context, vector);
+                    }
+                    else if (fieldType == typeof(Vector3))
+                    {
+                        var vector = (Vector3)field.GetValue(context);
+                        vector[index] = value;
+                        field.SetValue(context, vector);
+                    }
+                    else if (fieldType == typeof(Vector4))
+                    {
+                        var vector = (Vector4)field.GetValue(context);
+                        vector[index] = value;
+                        field.SetValue(context, vector);
+                    }
+                    else if (fieldType == typeof(Color))
+                    {
+                        var color = (Color)field.GetValue(context);
+                        color[index] = value;
+                        field.SetValue(context, color);
+                    }
+                }
+            }
+            
+            ListPool<Component>.Release(contexts);
+        } 
     }
 }
