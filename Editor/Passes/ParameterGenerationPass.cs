@@ -12,9 +12,14 @@ namespace Flare.Editor.Passes
 
         protected override void Execute(BuildContext context)
         {
+            var flare = context.GetState<FlareAvatarContext>();
+            
             // Generate temporary parameter object.
             var descriptor = context.AvatarDescriptor;
             var vrcParams = descriptor.expressionParameters;
+            
+            if (flare.IsEmpty)
+                return;
 
             // If persistent, copy to avoid messing with the original.
             if (!EditorUtility.IsPersistent(vrcParams) || vrcParams == null)

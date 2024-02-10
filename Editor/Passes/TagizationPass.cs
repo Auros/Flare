@@ -19,6 +19,10 @@ namespace Flare.Editor.Passes
         protected override void Execute(BuildContext context)
         {
             var flare = context.GetState<FlareAvatarContext>();
+            
+            if (flare.IsEmpty)
+                return;
+            
             var sucrose = flare.GetSucrose(context);
 
             // Create a dummy object because according to Kayla empty animations cause issues with WD OFF

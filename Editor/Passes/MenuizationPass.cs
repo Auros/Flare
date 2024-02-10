@@ -23,10 +23,9 @@ namespace Flare.Editor.Passes
             var descriptor = context.AvatarDescriptor;
             var expressions = descriptor.expressionsMenu;
 
-            // If for a reason we have no controls, don't generate any menus.
-            if (flare.ControlContexts.Count == 0)
+            if (flare.IsEmpty)
                 return;
-            
+ 
             if (expressions == null)
             {
                 expressions = ScriptableObject.CreateInstance<VRCExpressionsMenu>();

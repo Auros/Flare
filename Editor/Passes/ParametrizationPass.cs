@@ -17,6 +17,9 @@ namespace Flare.Editor.Passes
             var flare = context.GetState<FlareAvatarContext>();
             var descriptor = context.AvatarDescriptor;
             var vrcParams = descriptor.expressionParameters;
+            
+            if (flare.IsEmpty)
+                return;
 
             var flareParameters = flare.ControlContexts.Select(c =>
             {

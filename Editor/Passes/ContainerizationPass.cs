@@ -26,6 +26,9 @@ namespace Flare.Editor.Passes
         {
             var avatarRoot = context.AvatarRootTransform;
             var flare = context.GetState<FlareAvatarContext>();
+            
+            if (flare.IsEmpty)
+                return;
 
             // (one (1) set of property values). it expensive fr
             // I have an idea on how to optimize this. Generating the material properties is by far

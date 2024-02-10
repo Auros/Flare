@@ -32,6 +32,8 @@ namespace Flare.Editor
 
         public IReadOnlyList<ControlContext> ControlContexts => _controlContexts;
 
+        public bool IsEmpty => _controls.Count is 0;
+
         public bool PreferredWriteDefaults { get; internal set; }
         
         public void AddTags(FlareTags tags)

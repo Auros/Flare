@@ -17,6 +17,10 @@ namespace Flare.Editor.Passes
         protected override void Execute(BuildContext context)
         {
             var flare = context.GetState<FlareAvatarContext>();
+            
+            if (flare.IsEmpty)
+                return;
+            
             var frameTimeParameter = flare.GetFrameTimeParameter(context);
             var smoothTree = flare.GetSmoothingBlendTree(context);
             var dbt = flare.GetDirectBlendTree(context);

@@ -12,18 +12,23 @@ namespace Flare.Editor.Passes
 
         protected override void Execute(BuildContext context)
         {
+            var flare = context.GetState<FlareAvatarContext>();
+            if (flare.IsEmpty)
+                return;
+
+            
             // Because of the way Flare Folders work, we clone every submenu.
             var descriptor = context.AvatarDescriptor;
-            descriptor.expressionsMenu = Clone(descriptor.expressionsMenu, context.AssetContainer);
+            descriptor.expressionsMenu = Clone(context, descriptor.expressionsMenu, context.AssetContainer);
         }
 
-        private static VRCExpressionsMenu? Clone(VRCExpressionsMenu? menu, Object container)
+        private static VRCExpressionsMenu? Clone(BuildContext context, VRCExpressionsMenu? menu, Object container)
         {
             if (menu == null)
                 return null;
 
             // Clone persistent menu
-            if (EditorUtility.IsPersistent(menu))
+            if (!context.IsTemporaryAsset(menu))
             {
                 var newMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
                 newMenu.name = $"[Flare] {menu.name} (Clone)";
@@ -46,7 +51,7 @@ namespace Flare.Editor.Passes
 
             foreach (var control in menu.controls)
                 if (control.type is VRCExpressionsMenu.Control.ControlType.SubMenu)
-                    control.subMenu = Clone(control.subMenu, container);
+                    control.subMenu = Clone(context, control.subMenu, container);
 
             return menu;
         }

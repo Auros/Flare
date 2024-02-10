@@ -17,13 +17,13 @@ namespace Flare.Editor
             
             // Clone animators (using the Modular Avatar implementation... ty bd_ <3)
             InPhase(BuildPhase.Generating).Run("Clone Animators (MA Impl)", AnimationUtilities.CloneAllControllers);
-            InPhase(BuildPhase.Generating).Run<MenuGenerationPass>();
             InPhase(BuildPhase.Generating).Run<ContainerizationPass>();
             InPhase(BuildPhase.Generating).Run<ParameterGenerationPass>();
             
             InPhase(BuildPhase.Transforming)
                 .AfterPlugin("nadena.dev.modular-avatar")
-                .Run<ControlPass>()
+                .Run<MenuGenerationPass>()
+                .Then.Run<ControlPass>()
                 .Then.Run<ParametrizationPass>()
                 .Then.Run<MenuizationPass>()
                 .Then.Run<TagizationPass>()

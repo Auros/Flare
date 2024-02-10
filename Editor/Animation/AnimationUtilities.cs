@@ -50,6 +50,9 @@ namespace Flare.Editor.Animation
 
         internal static void CloneAllControllers(BuildContext context)
         {
+            if (context.GetState<FlareAvatarContext>().IsEmpty)
+                return;
+            
             // Ensure all of the controllers on the avatar descriptor point to temporary assets.
             // This helps reduce the risk that we'll accidentally modify the original assets.
             context.AvatarDescriptor.baseAnimationLayers =
@@ -66,6 +69,11 @@ namespace Flare.Editor.Animation
             for (int i = 0; i < layers.Length; i++)
             {
                 var layer = layers[i];
+                
+                // FLARE SPECIFIC: We only work with the FX layer (for now)
+                if (layer.type is not VRCAvatarDescriptor.AnimLayerType.FX)
+                    continue;
+                
                 if (layer.animatorController != null && !context.IsTemporaryAsset(layer.animatorController))
                 {
                     layer.animatorController = DeepCloneAnimator(context, layer.animatorController);
