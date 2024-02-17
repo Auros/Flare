@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
 namespace Flare.Editor.Elements
@@ -113,13 +114,15 @@ namespace Flare.Editor.Elements
             var contextTypeProperty = property.Property(nameof(PropertyInfo.ContextType));
             var contextType = Type.GetType(contextTypeProperty.stringValue);
 
+            var control = property.serializedObject.targetObject as FlareControl;
+
             _nameLabel.TrackPropertyValue(property, prop =>
             {
                 var propertyName = prop.Property(nameof(PropertyInfo.Name)).stringValue;
                 var propertyPath = prop.Property(nameof(PropertyInfo.Path)).stringValue;
                 
                 contextType = Type.GetType(contextTypeProperty.stringValue);
-                _referenceField.value = GetPropertyReference(propertyPath, contextType);
+                _referenceField.value = GetPropertyReference(control, propertyPath, contextType);
                 _referenceField.Visible(!string.IsNullOrWhiteSpace(propertyName));
                 _nameLabel.text = GetDisplayName(propertyName);
                 _nameLabel.tooltip = propertyPath;
@@ -160,7 +163,7 @@ namespace Flare.Editor.Elements
             _selectButton.Visible(string.IsNullOrEmpty(propertyName));
             _controlStateDropdown.Visible(!string.IsNullOrEmpty(propertyName));
             _referenceField.Visible(!string.IsNullOrWhiteSpace(propertyName));
-            _referenceField.value = GetPropertyReference(pathProperty.stringValue, contextType);
+            _referenceField.value =  GetPropertyReference(control, pathProperty.stringValue, contextType);
             
             _selectButton.clicked -= _selector;
             _selector = () => ShowPropertyWindow(property);
@@ -198,17 +201,17 @@ namespace Flare.Editor.Elements
             PropertySelectorWindow.Present(property);
         }
 
-        private static Object? GetPropertyReference(string path, Type? context)
+        private static Object? GetPropertyReference(Component? control, string path, Type? context)
         {
-            if (context == null)
+            if (context == null || control == null)
                 return null;
-            
-            
-            var go = GameObject.Find(path);
-            if (context == typeof(GameObject) && go)
-                return go!;
-            
-            return go == null ? null : go.GetComponent(context);
+
+            var descriptor = control.GetComponentInParent<VRCAvatarDescriptor>(true);
+            if (descriptor == null)
+                return null;
+
+            var go = descriptor.transform.GetObjectAtPath(context, path);
+            return go;
         }
     }
 }
