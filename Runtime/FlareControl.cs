@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Flare.Models;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
+using VRC.Utility;
 using Object = UnityEngine.Object;
 
 namespace Flare

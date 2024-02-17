@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Flare.Models;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -24,6 +25,7 @@ namespace Flare.Editor
         private readonly List<FlareControl> _controls = new();
         private readonly List<ControlContext> _controlContexts = new();
         private readonly Dictionary<string, ControlContext> _triggerControls = new();
+        private readonly Dictionary<(string, string), Component> _objectPropertyContexts = new();
         private readonly Dictionary<string, List<SucroseParameter>> _triggerParameters = new();
 
         public IReadOnlyList<FlareTags> Tags => _tags;
@@ -41,9 +43,24 @@ namespace Flare.Editor
             _tags.Add(tags);
         }
         
-        public void AddControl(FlareControl control)
+        public void AddControl(BuildContext context, FlareControl control)
         {
             _controls.Add(control);
+            foreach (var property in control.PropertyGroupCollection.Groups.SelectMany(g => g.Properties))
+            {
+                if (string.IsNullOrWhiteSpace(property.ContextType))
+                    continue;
+
+                var type = Type.GetType(property.ContextType);
+                if (type is null)
+                    continue;
+                
+                var ctx = context.AvatarRootTransform.GetObjectAtPath(type, property.Path);
+                if (ctx == null)
+                    continue;
+
+                _objectPropertyContexts[(property.Path, property.ContextType)] = (ctx as Component)!;
+            }
         }
         
         public void AddControlContext(ControlContext controlContext)
@@ -56,6 +73,11 @@ namespace Flare.Editor
             {
                 _triggerControls[controlContext.Id] = controlContext;
             }
+        }
+
+        public Component? GetPropertyContext(PropertyInfo property)
+        {
+            return _objectPropertyContexts.GetValueOrDefault((property.Path, property.ContextType));
         }
 
         public ControlContext? GetTriggerContext(string id)

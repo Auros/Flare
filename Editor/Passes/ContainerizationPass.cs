@@ -18,6 +18,7 @@ namespace Flare.Editor.Passes
     /// </summary>
     internal class ContainerizationPass : Pass<ContainerizationPass>
     {
+        private static readonly Dictionary<Type, FieldInfo[]> _fields = new();
         private static readonly Dictionary<string, Type?> _qualifierToType = new();
         
         public override string DisplayName => "Containerization";
@@ -164,22 +165,23 @@ namespace Flare.Editor.Passes
                                 properties.AddRange(candidates.Select(c => new PropertyInfo
                                 {
                                     Name = property.Name,
+                                    State = property.State,
                                     ColorType = property.ColorType,
                                     ValueType = property.ValueType,
                                     ContextType = property.ContextType,
                                     Path = c.transform.GetAnimatablePath(avatarRoot),
+                                    
                                     Analog = property.Analog,
                                     Vector = property.Vector,
                                     OverrideDefaultValue = property.OverrideDefaultValue,
                                     OverrideDefaultAnalog = property.OverrideDefaultAnalog,
                                     OverrideDefaultVector = property.OverrideDefaultVector,
-                                    State = property.State
                                 }));
                             }
                         }
                         
                         foreach (var prop in properties)
-                            BindAnimatablePropertiesFast(controlContext, binder, prop);
+                            BindAnimatablePropertiesFast(flare, context, controlContext, binder, prop);
                     }
                 }
             }
@@ -198,7 +200,7 @@ namespace Flare.Editor.Passes
         }
 
         // I needed this to be faster so I couldn't directly use the BindingService to get the properties.
-        private static void BindAnimatablePropertiesFast(ControlContext controlContext, BindingService binder, PropertyInfo prop)
+        private static void BindAnimatablePropertiesFast(FlareAvatarContext flare, BuildContext buildContext, ControlContext controlContext, BindingService binder, PropertyInfo prop)
         {
             var type = GetContextType(prop);
             if (type == null)
@@ -206,6 +208,9 @@ namespace Flare.Editor.Passes
                 // MAYBE: Warn?
                 return;
             }
+
+            var propertyContext = flare.GetPropertyContext(prop);
+            var propertyPath = propertyContext.AsNullable()?.transform.GetAnimatablePath(buildContext.AvatarRootTransform) ?? prop.Path;
             
             // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (prop.ValueType is PropertyValueType.Float or PropertyValueType.Boolean or PropertyValueType.Integer)
@@ -213,13 +218,13 @@ namespace Flare.Editor.Passes
                 FlarePseudoProperty pseudoProperty = new(type, null!, new EditorCurveBinding
                 {
                     type = type,
-                    path = prop.Path,
+                    path = propertyPath,
                     propertyName = prop.Name
                 });
                 
                 FlareProperty flareProperty = new(
                     prop.Name,
-                    prop.Path,
+                    propertyPath,
                     type,
                     prop.ValueType,
                     prop.ColorType,
@@ -229,7 +234,7 @@ namespace Flare.Editor.Passes
                     null
                 );
                 
-                BindPropertyToAnimatable(controlContext, binder, prop, flareProperty);
+                BindPropertyToAnimatable(flare, controlContext, binder, prop, flareProperty);
             }
             else if (prop.ValueType is PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4)
             {
@@ -267,7 +272,7 @@ namespace Flare.Editor.Passes
                         new EditorCurveBinding
                         {
                             type = type,
-                            path = prop.Path,
+                            path = propertyPath,
                             propertyName = $"{prop.Name}{target}"
                         }
                     ));
@@ -275,7 +280,7 @@ namespace Flare.Editor.Passes
                 
                 FlareProperty flareProperty = new(
                     prop.Name,
-                    prop.Path,
+                    propertyPath,
                     type,
                     prop.ValueType,
                     prop.ColorType,
@@ -285,12 +290,12 @@ namespace Flare.Editor.Passes
                     pseudoProperties
                 );
                 
-                BindPropertyToAnimatable(controlContext, binder, prop, flareProperty);
+                BindPropertyToAnimatable(flare, controlContext, binder, prop, flareProperty);
                 ListPool<FlarePseudoProperty>.Release(pseudoProperties);
             }
         }
 
-        private static string GetId(FlareControl control, FlareAvatarContext context)
+        private static string GetId(FlareControl control, FlareAvatarContext flare)
         {
             var validId = false;
             var id = $"[Flare] {control.MenuItem.Name}";
@@ -347,19 +352,16 @@ namespace Flare.Editor.Passes
                 if (run > 0)
                     id += $" {run}";
 
-                validId = context.ControlContexts.All(c => c.Id != id);
+                validId = flare.ControlContexts.All(c => c.Id != id);
                 run++;
             }
             return id;
         }
         
-        private static void BindPropertyToAnimatable(ControlContext controlContext, BindingService binder, PropertyInfo prop, FlareProperty animatable)
+        private static void BindPropertyToAnimatable(FlareAvatarContext flare, ControlContext controlContext, BindingService binder, PropertyInfo prop, FlareProperty animatable)
         {
             var path = animatable.Path;
             var type = animatable.ContextType;
-
-            if (prop.Name == "material._AudioLinkAnimToggle")
-                _ = true;
 
             switch (animatable.Type)
             {
@@ -402,7 +404,7 @@ namespace Flare.Editor.Passes
                 if (prop.OverrideDefaultValue)
                 {
                     // Automatically assign these values on the base on upload for avatar preview.
-                    TryAssignDefaultToAvatar(targetDefaultValue, type, prop, name, index);
+                    TryAssignDefaultToAvatar(flare, targetDefaultValue, type, prop, name, index);
                 }
 
                 AnimatableBinaryProperty property = new(type, path, name, targetDefaultValue, targetInverseValue);
@@ -411,13 +413,9 @@ namespace Flare.Editor.Passes
 
         }
 
-        private static readonly Dictionary<Type, FieldInfo[]> _fields = new();
-        
-        private static void TryAssignDefaultToAvatar(float value, Type contextType, PropertyInfo propertyInfo, string propertyName, int index)
+        private static void TryAssignDefaultToAvatar(FlareAvatarContext flare, float value, Type contextType, PropertyInfo propertyInfo, string propertyName, int index)
         {
-            // I have no idea the best way to do this,
-            // and I also don't know how to do it for materials.
-            var source = GameObject.Find(propertyInfo.Path);
+            var source = flare.GetPropertyContext(propertyInfo);
             if (source == null)
                 return;
 

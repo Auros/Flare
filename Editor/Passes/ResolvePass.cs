@@ -1,4 +1,5 @@
-﻿using nadena.dev.ndmf;
+﻿using System.Linq;
+using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -33,9 +34,11 @@ namespace Flare.Editor.Passes
                         control.GetReferencesNotOnAvatar(errors);
                         var errorCount = errors.Count;
                         ListPool<Object?>.Release(errors);
-                        
+
                         if (errorCount is 0)
-                            flare.AddControl(control);
+                        {
+                            flare.AddControl(context, control);
+                        }
                         
                         break;
                     
