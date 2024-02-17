@@ -172,7 +172,8 @@ namespace Flare.Editor.Passes
                                     Vector = property.Vector,
                                     OverrideDefaultValue = property.OverrideDefaultValue,
                                     OverrideDefaultAnalog = property.OverrideDefaultAnalog,
-                                    OverrideDefaultVector = property.OverrideDefaultVector
+                                    OverrideDefaultVector = property.OverrideDefaultVector,
+                                    State = property.State
                                 }));
                             }
                         }
@@ -357,31 +358,8 @@ namespace Flare.Editor.Passes
             var path = animatable.Path;
             var type = animatable.ContextType;
 
-            void CreateAnimatableFloatProperty(FlarePseudoProperty flarePseudoProperty, float inverseValue, int index)
-            {
-                var name = flarePseudoProperty.Name;
-                var defaultValue = prop.OverrideDefaultValue ? prop.ValueType switch
-                {
-                    PropertyValueType.Boolean => prop.OverrideDefaultAnalog,
-                    PropertyValueType.Integer => prop.OverrideDefaultAnalog,
-                    PropertyValueType.Float => prop.OverrideDefaultAnalog,
-                    PropertyValueType.Vector2 => prop.OverrideDefaultVector[index],
-                    PropertyValueType.Vector3 => prop.OverrideDefaultVector[index],
-                    PropertyValueType.Vector4 => prop.OverrideDefaultVector[index],
-                    _ => throw new ArgumentOutOfRangeException()
-                } : binder.GetPropertyValue(flarePseudoProperty);
-                var targetDefaultValue = prop.State is ControlState.Enabled ? defaultValue : inverseValue;
-                var targetInverseValue = prop.State is ControlState.Enabled ? inverseValue : defaultValue;
-
-                if (prop.OverrideDefaultValue)
-                {
-                    // Automatically assign these values on the base on upload for avatar preview.
-                    TryAssignDefaultToAvatar(defaultValue, type, prop, name, index);
-                }
-
-                AnimatableBinaryProperty property = new(type, path, name, targetDefaultValue, targetInverseValue);
-                controlContext.AddProperty(property);
-            }
+            if (prop.Name == "material._AudioLinkAnimToggle")
+                _ = true;
 
             switch (animatable.Type)
             {
@@ -403,6 +381,34 @@ namespace Flare.Editor.Passes
                     break;
                 }
             }
+            
+            void CreateAnimatableFloatProperty(FlarePseudoProperty flarePseudoProperty, float inverseValue, int index)
+            {
+                var name = flarePseudoProperty.Name;
+                var defaultValue = prop.OverrideDefaultValue ? prop.ValueType switch
+                {
+                    PropertyValueType.Boolean => prop.OverrideDefaultAnalog,
+                    PropertyValueType.Integer => prop.OverrideDefaultAnalog,
+                    PropertyValueType.Float => prop.OverrideDefaultAnalog,
+                    PropertyValueType.Vector2 => prop.OverrideDefaultVector[index],
+                    PropertyValueType.Vector3 => prop.OverrideDefaultVector[index],
+                    PropertyValueType.Vector4 => prop.OverrideDefaultVector[index],
+                    _ => throw new ArgumentOutOfRangeException()
+                } : binder.GetPropertyValue(flarePseudoProperty);
+                
+                var targetDefaultValue = prop.State is ControlState.Enabled ? defaultValue : inverseValue;
+                var targetInverseValue = prop.State is ControlState.Enabled ? inverseValue : defaultValue;
+
+                if (prop.OverrideDefaultValue)
+                {
+                    // Automatically assign these values on the base on upload for avatar preview.
+                    TryAssignDefaultToAvatar(targetDefaultValue, type, prop, name, index);
+                }
+
+                AnimatableBinaryProperty property = new(type, path, name, targetDefaultValue, targetInverseValue);
+                controlContext.AddProperty(property);
+            }
+
         }
 
         private static readonly Dictionary<Type, FieldInfo[]> _fields = new();
