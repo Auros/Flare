@@ -146,11 +146,14 @@ namespace Flare.Editor.Windows
                         if (type is PropertyValueType.Float)
                         {
                             var menuInfo = control.MenuItem;
-                            var oppositeTarget = binding.Source is FlarePropertySource.Blendshape ? 100f : 1f;
+                            var nonZeroTarget = binding.Source is FlarePropertySource.Blendshape ? 100f : 1f;
                         
                             var defaultValue = binder.GetPropertyValue<float>(binding);
-                            if (oppositeTarget >= defaultValue && defaultValue >= 0)
-                                predictiveValue = defaultValue is 0 ? oppositeTarget : 0f;
+
+                            predictiveValue = defaultValue == 0 ? nonZeroTarget : 0;
+                            
+                            //if (oppositeTarget >= defaultValue && defaultValue >= 0)
+                            //    predictiveValue = defaultValue is 0 ? oppositeTarget : 0f;
 
                             var predictiveDisable = menuInfo.Type is MenuItemType.Toggle && menuInfo.DefaultState;
                             property.Property(nameof(PropertyInfo.State))

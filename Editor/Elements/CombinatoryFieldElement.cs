@@ -228,7 +228,6 @@ namespace Flare.Editor.Elements
                 case FloatField floatField:
                     floatField.UnregisterValueChangedCallback(_floatChange);
                     _floatChange = evt => mainAnalogProperty.SetValue(evt.newValue);
-                    floatField.RegisterValueChangedCallback(_floatChange);
 
                     var isBlendShape = nameProperty.stringValue.StartsWith("blendShape.");
                     var maxSliderValue = isBlendShape ? 100f : 1f;
@@ -246,6 +245,7 @@ namespace Flare.Editor.Elements
                     });
                     var defaultValue = getAnalog(mainAnalogProperty);
                     floatField.value = defaultValue;
+                    floatField.RegisterValueChangedCallback(_floatChange);
                     
                     var shouldBeEnabled = defaultValue >= 0 && defaultValue <= maxSliderValue && enabledSelf;
                     _slider.SetEnabled(shouldBeEnabled);
