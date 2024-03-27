@@ -404,7 +404,7 @@ namespace Flare.Editor.Passes
                 if (prop.OverrideDefaultValue)
                 {
                     // Automatically assign these values on the base on upload for avatar preview.
-                    TryAssignDefaultToAvatar(flare, targetDefaultValue, type, prop, name, index);
+                    TryAssignDefaultToAvatar(flare, defaultValue, type, prop, name, index);
                 }
 
                 AnimatableBinaryProperty property = new(type, path, name, targetDefaultValue, targetInverseValue);
