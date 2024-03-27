@@ -213,8 +213,17 @@ namespace Flare.Editor.Passes
             }
 
             var propertyContext = flare.GetPropertyContext(prop);
-            var propertyPath = propertyContext.AsNullable()?.transform.GetAnimatablePath(buildContext.AvatarRootTransform) ?? prop.Path;
-            
+            var propertyPath = propertyContext.AsNullable()?.transform.GetAnimatablePath(buildContext.AvatarRootTransform);
+
+            if (propertyPath == null)
+            {
+                propertyPath = prop.Path;
+                Debug.Log("no component found for " + prop.Path);
+            }
+
+            if (propertyPath != prop.Path)
+                Debug.Log("Moved '" + prop.Path + "' to '" + propertyPath + "'.");
+
             // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (prop.ValueType is PropertyValueType.Float or PropertyValueType.Boolean or PropertyValueType.Integer)
             {
