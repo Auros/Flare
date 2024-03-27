@@ -96,6 +96,7 @@ namespace Flare.Editor.Windows
             buttonGroup.CreateButton("Blendshapes", () => searchField.value = "t:Blendshape ").WithGrow(1f);
             buttonGroup.CreateButton("Materials", () => searchField.value = "t:Material ").WithGrow(1f);
             buttonGroup.CreateButton("Everything", () => searchField.value = string.Empty).WithGrow(1f);
+            searchField.Focus();
 
             var bindingSearch = binder.GetPropertyBindings().Where(b => b.GameObject != avatarGameObject);
             if (propertyGroup.SelectionType is PropertySelectionType.Avatar)
