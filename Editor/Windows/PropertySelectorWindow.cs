@@ -185,6 +185,14 @@ namespace Flare.Editor.Windows
                             property.Property(nameof(PropertyInfo.Vector)).SetValue(defaultValue);
                             break;
                         }
+                        case PropertyValueType.Object:
+                        {
+                            var defaultValue = (UnityEngine.Object)binder.GetPropertyValue(binding);
+                            property.Property(nameof(PropertyInfo.Object)).SetValue(defaultValue);
+                            var objectType = binding.GetPseudoProperty(0).Type;
+                            property.Property(nameof(PropertyInfo.ObjectType)).SetValue(objectType.AssemblyQualifiedName);
+                            break;
+                        }
                     }
                     
                     Close();

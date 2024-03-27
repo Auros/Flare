@@ -28,6 +28,12 @@ namespace Flare.Models
         public Vector4 Vector { get; internal set; }
 
         [field: SerializeField]
+        public UnityEngine.Object Object { get; internal set; }
+
+        [field: SerializeField]
+        public string ObjectType { get; internal set; }
+
+        [field: SerializeField]
         public ControlState State { get; internal set; }
 
         [field: SerializeField]
@@ -35,6 +41,9 @@ namespace Flare.Models
 
         [field: SerializeField]
         public float OverrideDefaultAnalog { get; internal set; }
+
+        [field: SerializeField]
+        public UnityEngine.Object OverrideDefaultObject { get; internal set; }
 
         [field: SerializeField]
         public Vector4 OverrideDefaultVector { get; internal set; }

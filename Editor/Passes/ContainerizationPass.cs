@@ -176,6 +176,7 @@ namespace Flare.Editor.Passes
                                     OverrideDefaultValue = property.OverrideDefaultValue,
                                     OverrideDefaultAnalog = property.OverrideDefaultAnalog,
                                     OverrideDefaultVector = property.OverrideDefaultVector,
+                                    OverrideDefaultObject = property.OverrideDefaultObject,
                                 }));
                             }
                         }
@@ -234,6 +235,30 @@ namespace Flare.Editor.Passes
                     null
                 );
                 
+                BindPropertyToAnimatable(flare, controlContext, binder, prop, flareProperty);
+            }
+            else if (prop.ValueType is PropertyValueType.Object)
+            {
+                // i really hate using type.gettype, remove this later if we dont need binding type
+                FlarePseudoProperty pseudoProperty = new(Type.GetType(prop.ObjectType), null!, new EditorCurveBinding
+                {
+                    type = type,
+                    path = propertyPath,
+                    propertyName = prop.Name
+                });
+
+                FlareProperty flareProperty = new(
+                    prop.Name,
+                    propertyPath,
+                    type,
+                    prop.ValueType,
+                    prop.ColorType,
+                    FlarePropertySource.None,
+                    null!,
+                    pseudoProperty,
+                    null
+                );
+
                 BindPropertyToAnimatable(flare, controlContext, binder, prop, flareProperty);
             }
             else if (prop.ValueType is PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4)
@@ -368,23 +393,29 @@ namespace Flare.Editor.Passes
                 case PropertyValueType.Float or PropertyValueType.Boolean or PropertyValueType.Integer:
                 {
                     var inverseValue = prop.Analog;
-                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), inverseValue, 0);
+                    CreateAnimatableProperty(animatable.GetPseudoProperty(0), inverseValue, 0);
                     break;
                 }
                 case PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4:
                 {
                     // Need to convert each individual property for vectors to floats
-                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(0), prop.Vector[0], 0); // Guaranteed
-                    CreateAnimatableFloatProperty(animatable.GetPseudoProperty(1), prop.Vector[1], 1); // Guaranteed
+                    CreateAnimatableProperty(animatable.GetPseudoProperty(0), prop.Vector[0], 0); // Guaranteed
+                    CreateAnimatableProperty(animatable.GetPseudoProperty(1), prop.Vector[1], 1); // Guaranteed
                     if (animatable.Type is PropertyValueType.Vector3 or PropertyValueType.Vector4)
-                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(2), prop.Vector[2], 2);
+                        CreateAnimatableProperty(animatable.GetPseudoProperty(2), prop.Vector[2], 2);
                     if (animatable.Type is PropertyValueType.Vector4)
-                        CreateAnimatableFloatProperty(animatable.GetPseudoProperty(3), prop.Vector[3], 3);
+                        CreateAnimatableProperty(animatable.GetPseudoProperty(3), prop.Vector[3], 3);
+                    break;
+                }
+                case PropertyValueType.Object:
+                {
+                    var inverseValue = prop.Object;
+                    CreateAnimatableProperty(animatable.GetPseudoProperty(0), inverseValue, 0);
                     break;
                 }
             }
             
-            void CreateAnimatableFloatProperty(FlarePseudoProperty flarePseudoProperty, float inverseValue, int index)
+            void CreateAnimatableProperty(FlarePseudoProperty flarePseudoProperty, object inverseValue, int index)
             {
                 var name = flarePseudoProperty.Name;
                 var defaultValue = prop.OverrideDefaultValue ? prop.ValueType switch
@@ -395,6 +426,7 @@ namespace Flare.Editor.Passes
                     PropertyValueType.Vector2 => prop.OverrideDefaultVector[index],
                     PropertyValueType.Vector3 => prop.OverrideDefaultVector[index],
                     PropertyValueType.Vector4 => prop.OverrideDefaultVector[index],
+                    PropertyValueType.Object => prop.OverrideDefaultObject,
                     _ => throw new ArgumentOutOfRangeException()
                 } : binder.GetPropertyValue(flarePseudoProperty);
                 
@@ -413,7 +445,7 @@ namespace Flare.Editor.Passes
 
         }
 
-        private static void TryAssignDefaultToAvatar(FlareAvatarContext flare, float value, Type contextType, PropertyInfo propertyInfo, string propertyName, int index)
+        private static void TryAssignDefaultToAvatar(FlareAvatarContext flare, object value, Type contextType, PropertyInfo propertyInfo, string propertyName, int index)
         {
             var source = flare.GetPropertyContext(propertyInfo);
             if (source == null)
@@ -422,7 +454,7 @@ namespace Flare.Editor.Passes
             if (contextType == typeof(GameObject))
             {
                 if (propertyName == "m_IsActive")
-                    source.gameObject.SetActive(value >= 0.5f);
+                    source.gameObject.SetActive((float)value >= 0.5f);
                 
                 return;
             }
@@ -435,21 +467,21 @@ namespace Flare.Editor.Passes
                     case "m_LocalPosition":
                     {
                         var localPosition = transform.localPosition;
-                        localPosition[index] = value;
+                        localPosition[index] = (float)value;
                         transform.localPosition = localPosition;
                         break;
                     }
                     case "m_LocalRotation":
                     {
                         var localRotation = transform.localRotation;
-                        localRotation[index] = value;
+                        localRotation[index] = (float)value;
                         transform.localRotation = localRotation;
                         break;
                     }
                     case "m_LocalScale":
                     {
                         var localScale = transform.localScale;
-                        localScale[index] = value;
+                        localScale[index] = (float)value;
                         transform.localScale = localScale;
                         break;
                     }
@@ -463,11 +495,27 @@ namespace Flare.Editor.Passes
                 switch (component)
                 {
                     case Behaviour behaviour:
-                        behaviour.enabled = value > 0.5f;
+                        behaviour.enabled = (float)value > 0.5f;
                         break;
                     case Renderer renderer:
-                        renderer.enabled = value > 0.5f;
+                        renderer.enabled = (float)value > 0.5f;
                         break;
+                }
+                return;
+            }
+
+            if (propertyInfo.Name.StartsWith("m_Materials.Array.data[", StringComparison.Ordinal))
+            {
+                var matIndexStr = propertyInfo.Name.Substring(23).Trim();
+                matIndexStr = matIndexStr.Remove(matIndexStr.Length - 1);
+                var matIndex = int.Parse(matIndexStr);
+
+                var component = source.GetComponent(contextType);
+                if (component is Renderer renderer)
+                {
+                    var mats = renderer.materials;
+                    mats[matIndex] = (Material)value;
+                    renderer.materials = mats;
                 }
                 return;
             }
@@ -485,7 +533,7 @@ namespace Flare.Editor.Passes
                 if (blendShapeIndex is -1)
                     return;
                 
-                skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, value);
+                skinnedMeshRenderer.SetBlendShapeWeight(blendShapeIndex, (float)value);
                 
                 return;
             }
@@ -512,31 +560,31 @@ namespace Flare.Editor.Passes
                 else if (fieldType == typeof(int))
                     field.SetValue(context, (int)value);
                 else if (fieldType == typeof(bool))
-                    field.SetValue(context, value >= 0.5f);
+                    field.SetValue(context, (float)value >= 0.5f);
                 else if (propertyInfo.ValueType is PropertyValueType.Vector2 or PropertyValueType.Vector3 or PropertyValueType.Vector4)
                 {
                     if (fieldType == typeof(Vector2))
                     {
                         var vector = (Vector2)field.GetValue(context);
-                        vector[index] = value;
+                        vector[index] = (float)value;
                         field.SetValue(context, vector);
                     }
                     else if (fieldType == typeof(Vector3))
                     {
                         var vector = (Vector3)field.GetValue(context);
-                        vector[index] = value;
+                        vector[index] = (float)value;
                         field.SetValue(context, vector);
                     }
                     else if (fieldType == typeof(Vector4))
                     {
                         var vector = (Vector4)field.GetValue(context);
-                        vector[index] = value;
+                        vector[index] = (float)value;
                         field.SetValue(context, vector);
                     }
                     else if (fieldType == typeof(Color))
                     {
                         var color = (Color)field.GetValue(context);
-                        color[index] = value;
+                        color[index] = (float)value;
                         field.SetValue(context, color);
                     }
                 }

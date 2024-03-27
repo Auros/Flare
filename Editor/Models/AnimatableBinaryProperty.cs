@@ -10,11 +10,11 @@ namespace Flare.Editor.Models
         
         public string Name { get; }
         
-        public float DefaultValue { get; }
+        public object DefaultValue { get; }
         
-        public float InverseValue { get; }
+        public object InverseValue { get; }
 
-        public AnimatableBinaryProperty(Type type, string path, string name, float defaultValue, float inverseValue)
+        public AnimatableBinaryProperty(Type type, string path, string name, object defaultValue, object inverseValue)
         {
             Type = type;
             Path = path;
@@ -23,7 +23,7 @@ namespace Flare.Editor.Models
             InverseValue = inverseValue;
         }
 
-        public void Deconstruct(out string path, out Type type, out string name, out float defaultValue, out float inverseValue)
+        public void Deconstruct(out string path, out Type type, out string name, out object defaultValue, out object inverseValue)
         {
             path = Path;
             type = Type;
