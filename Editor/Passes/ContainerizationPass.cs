@@ -173,6 +173,8 @@ namespace Flare.Editor.Passes
                                     
                                     Analog = property.Analog,
                                     Vector = property.Vector,
+                                    Object = property.Object,
+                                    ObjectType = property.ObjectType,
                                     OverrideDefaultValue = property.OverrideDefaultValue,
                                     OverrideDefaultAnalog = property.OverrideDefaultAnalog,
                                     OverrideDefaultVector = property.OverrideDefaultVector,
