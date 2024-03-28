@@ -80,9 +80,20 @@ namespace Flare.Editor.Windows
                 PropertySelectionType.Avatar => propertyGroup.Exclusions,
                 _ => throw new ArgumentOutOfRangeException()
             }).Distinct().ToArray();
-            
+
+            // keeping this here in case we ever find a way to differentiate between context type on the UI.
+            // for now, renderer type properties will automatically be merged.
+            //var mergeRenderersToggle = new Toggle();
+            //mergeRenderersToggle.style.marginLeft = StyleKeyword.Auto;
+            //mergeRenderersToggle.label = "Combine Renderer Properties";
+            //mergeRenderersToggle.WithFontSize(11f);
+            //mergeRenderersToggle.WithPadding(2f);
+            //mergeRenderersToggle.value = true;
+
             var avatarGameObject = descriptor.gameObject;
-            root.CreateLabel($"Current Avatar: {avatarGameObject.name}").WithPadding(3f);
+            var headingGroup = root.CreateHorizontal();
+            headingGroup.CreateLabel($"Current Avatar: {avatarGameObject.name}").WithPadding(3f);
+            //headingGroup.Add(mergeRenderersToggle);
 
             var binder = propertyGroup.SelectionType is PropertySelectionType.Normal ?
                 new BindingService(avatarGameObject, objects)
@@ -131,8 +142,9 @@ namespace Flare.Editor.Windows
                     var propName = pseudoProperty?.Name ?? binding.Name;
                     var type = pseudoProperty is null ? binding.Type : PropertyValueType.Float;
                     var color = pseudoProperty is null ? binding.Color : PropertyColorType.None;
-                    var contextType = binding.ContextType;
-                    
+                    //var contextType = mergeRenderersToggle.value && typeof(Renderer).IsAssignableFrom(binding.ContextType) ? typeof(Renderer) : binding.ContextType;
+                    var contextType = typeof(Renderer).IsAssignableFrom(binding.ContextType) ? typeof(Renderer) : binding.ContextType;
+
                     property.Property(nameof(PropertyInfo.Name)).SetValue(propName);
                     property.Property(nameof(PropertyInfo.Path)).SetValue(binding.Path);
                     property.Property(nameof(PropertyInfo.ValueType)).SetValue(type);
@@ -215,18 +227,17 @@ namespace Flare.Editor.Windows
                 );
             });
 
-            searchField.RegisterValueChangedCallback(ctx =>
+            void RefreshList(string search, bool mergeRenderers)
             {
                 // TODO: Add optimistic search when typing (no backspace)
                 items.Clear();
-                if (ctx.newValue == string.Empty)
+                if (search == string.Empty)
                 {
                     items.AddRange(bindings);
                     list.RefreshItems();
                     return;
                 }
-                
-                var search = ctx.newValue;
+
                 var materialsOnly = search.Contains("t:Material");
                 var blendshapesOnly = search.Contains("t:Blendshape");
 
@@ -237,35 +248,53 @@ namespace Flare.Editor.Windows
 
                 var searchParts = search.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-                foreach (var group in bindings)
+                using (HashSetPool<string>.Get(out var addedRendererParams))
                 {
-                    var failedSearch = false;
-                    var source = group.Source;
-
-                    if (materialsOnly && source is not FlarePropertySource.Material)
-                        continue;
+                    var rendererType = typeof(Renderer);
                     
-                    if (blendshapesOnly && source is not FlarePropertySource.Blendshape)
-                        continue;
-                    
-                    foreach (var part in searchParts)
+                    foreach (var group in bindings)
                     {
-                        if (group.Id.Contains(part, StringComparison.OrdinalIgnoreCase))
+                        var failedSearch = false;
+                        var source = group.Source;
+
+                        if (materialsOnly && source is not FlarePropertySource.Material)
                             continue;
 
-                        failedSearch = true;
-                        break;
-                    }
+                        if (blendshapesOnly && source is not FlarePropertySource.Blendshape)
+                            continue;
 
-                    if (failedSearch)
-                        continue;
-                    
-                    items.Add(group);
+                        foreach (var part in searchParts)
+                        {
+                            if (group.Id.Contains(part, StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            failedSearch = true;
+                            break;
+                        }
+
+                        if (failedSearch)
+                            continue;
+
+                        var contextType = group.ContextType;
+
+                        if (mergeRenderers && rendererType.IsAssignableFrom(contextType))
+                        {
+                            if (addedRendererParams.Contains(group.Name))
+                                continue;
+                            else
+                                addedRendererParams.Add(group.Name);
+                        }
+
+                        items.Add(group);
+                    }
                 }
 
                 list.RefreshItems();
                 list.Query<BindablePropertyCell>().ForEach(BindablePropertyCell.FixSelector);
-            });
+            }
+
+            searchField.RegisterValueChangedCallback(ctx => RefreshList(ctx.newValue, true));
+            //mergeRenderersToggle.RegisterValueChangedCallback(ctx => RefreshList(searchField.value, ctx.newValue));
 
             VisualElement container = new();
             container.Add(list);
