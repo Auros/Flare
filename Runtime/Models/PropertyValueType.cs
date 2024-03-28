@@ -7,6 +7,7 @@
         Float,
         Vector2,
         Vector3,
-        Vector4
+        Vector4,
+        Object
     }
 }

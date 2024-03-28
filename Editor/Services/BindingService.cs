@@ -49,7 +49,7 @@ namespace Flare.Editor.Services
             return (T)GetPropertyValue(property);
         }
 
-        public float GetPropertyValue(FlarePseudoProperty property)
+        public object GetPropertyValue(FlarePseudoProperty property)
         {
             _ = AnimationUtility.GetFloatValue(_root, property.Binding, out var pseudoDefault);
             return pseudoDefault;
@@ -82,6 +82,12 @@ namespace Flare.Editor.Services
                 }
                 return value;
             }
+
+            UnityEngine.Object GetObjectValue(FlareProperty prop)
+            {
+                _ = AnimationUtility.GetObjectReferenceValue(_root, prop.GetPseudoProperty(0).Binding, out var objectValue);
+                return objectValue;
+            }
             
             // The Allocator 9000
             object value = property.Type switch
@@ -92,6 +98,7 @@ namespace Flare.Editor.Services
                 PropertyValueType.Vector2 => GetVectorValue(property),
                 PropertyValueType.Vector3 => GetVectorValue(property),
                 PropertyValueType.Vector4 => GetVectorValue(property),
+                PropertyValueType.Object => GetObjectValue(property),
                 _ => throw new ArgumentOutOfRangeException()
             };
             
@@ -134,10 +141,10 @@ namespace Flare.Editor.Services
                         return null;
                     
                     var type = AnimationUtility.GetEditorCurveValueType(_root, binding);
-                    
+
                     // For the time being we'll only be working with the primitive float, int, and bool properties.
                     // In the future we may be able to support others like Materials and such.
-                    if (type != typeof(float) && type != typeof(int) && type != typeof(bool))
+                    if (type != typeof(float) && type != typeof(int) && type != typeof(bool) && type != typeof(Material))
                         return null;
                     
                     if (preSearch == null)
@@ -265,6 +272,8 @@ namespace Flare.Editor.Services
                     propertyType = PropertyValueType.Float;
                 else if (type == typeof(int))
                     propertyType = PropertyValueType.Integer;
+                else if (typeof(UnityEngine.Object).IsAssignableFrom(type))
+                    propertyType = PropertyValueType.Object;
                 else
                     propertyType = PropertyValueType.Boolean;
 

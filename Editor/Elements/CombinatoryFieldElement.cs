@@ -24,6 +24,7 @@ namespace Flare.Editor.Elements
         private readonly Vector2Field _vector2Field;
         private readonly Vector3Field _vector3Field;
         private readonly Vector4Field _vector4Field;
+        private readonly ObjectField _objectField;
 
         private readonly VisualElement[] _fields;
 
@@ -34,6 +35,7 @@ namespace Flare.Editor.Elements
         private EventCallback<ChangeEvent<Vector2>>? _vector2Change;
         private EventCallback<ChangeEvent<Vector3>>? _vector3Change;
         private EventCallback<ChangeEvent<Vector4>>? _vector4Change;
+        private EventCallback<ChangeEvent<UnityEngine.Object>>? _objectChange;
         private bool _useOverrideValue;
         
         public CombinatoryFieldElement()
@@ -46,6 +48,7 @@ namespace Flare.Editor.Elements
             _vector2Field = new Vector2Field();
             _vector3Field = new Vector3Field();
             _vector4Field = new Vector4Field();
+            _objectField = new ObjectField();
 
             Add(_toggle);
             Add(_colorField);
@@ -54,6 +57,7 @@ namespace Flare.Editor.Elements
             Add(_vector2Field);
             Add(_vector3Field);
             Add(_vector4Field);
+            Add(_objectField);
             
             Add(_slider);
             _slider.WithStart().WithEnd();
@@ -68,7 +72,8 @@ namespace Flare.Editor.Elements
                 _integerField,
                 _vector2Field,
                 _vector3Field,
-                _vector4Field
+                _vector4Field,
+                _objectField
             };
 
             foreach (var visualElement in _fields)
@@ -92,6 +97,7 @@ namespace Flare.Editor.Elements
             _vector2Field.label = label;
             _vector3Field.label = label;
             _vector4Field.label = label;
+            _objectField.label = label;
         }
         
         /// <summary>
@@ -120,6 +126,7 @@ namespace Flare.Editor.Elements
                 PropertyValueType.Vector2 => _vector2Field,
                 PropertyValueType.Vector3 => isColor ? _colorField : _vector3Field,
                 PropertyValueType.Vector4 => isColor ? _colorField : _vector4Field,
+                PropertyValueType.Object => _objectField,
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -134,18 +141,22 @@ namespace Flare.Editor.Elements
             var pathProperty = property.Property(nameof(PropertyInfo.Path));
             var analogProperty = property.Property(nameof(PropertyInfo.Analog));
             var vectorProperty = property.Property(nameof(PropertyInfo.Vector));
+            var objectProperty = property.Property(nameof(PropertyInfo.Object));
+            var objectTypeProperty = property.Property(nameof(PropertyInfo.ObjectType));
 
             var overrideAnalogProperty = property.Property(nameof(PropertyInfo.OverrideDefaultAnalog));
             var overrideVectorProperty = property.Property(nameof(PropertyInfo.OverrideDefaultVector));
+            var overrideObjectProperty = property.Property(nameof(PropertyInfo.OverrideDefaultObject));
 
             var propertyName = nameProperty.stringValue;
             var propertyPath = pathProperty.stringValue;
             
             var avatarDescriptor = (property.serializedObject.targetObject as FlareControl)!
                 .GetComponentInParent<VRC_AvatarDescriptor>();
-            
+
             float? defaultAnalogValue = null;
             Vector4? defaultVectorValue = null;
+            UnityEngine.Object? defaultObjectValue = null;
 
             var typeName = property.Property(nameof(PropertyInfo.ContextType)).stringValue;
             var contextType = Type.GetType(typeName);
@@ -167,6 +178,13 @@ namespace Flare.Editor.Elements
                         var binding = EditorCurveBinding.FloatCurve(propertyPath, contextType, propertyName);
                         if (AnimationUtility.GetFloatValue(root, binding, out var floatValue))
                             defaultAnalogValue = floatValue;
+                        break;
+                    }
+                    case PropertyValueType.Object:
+                    {
+                        var binding = EditorCurveBinding.PPtrCurve(propertyPath, contextType, propertyName);
+                        if (AnimationUtility.GetObjectReferenceValue(root, binding, out var objectValue))
+                            defaultObjectValue = objectValue;
                         break;
                     }
                     default:
@@ -206,8 +224,13 @@ namespace Flare.Editor.Elements
             Func<SerializedProperty, Vector4> getVector = prop =>
                 enabledInHierarchy ? prop.vector4Value : defaultVectorValue.GetValueOrDefault();
 
+            // ReSharper disable once ConvertToLocalFunction
+            Func<SerializedProperty, UnityEngine.Object?> getObject = prop =>
+                enabledInHierarchy ? prop.objectReferenceValue : defaultObjectValue;
+
             var mainAnalogProperty = _useOverrideValue ? overrideAnalogProperty : analogProperty;
             var mainVectorProperty = _useOverrideValue ? overrideVectorProperty : vectorProperty;
+            var mainObjectProperty = _useOverrideValue ? overrideObjectProperty : objectProperty;
             
             switch (target)
             {
@@ -292,6 +315,14 @@ namespace Flare.Editor.Elements
                     colorField.hdr = colorType is PropertyColorType.HDR;
                     colorField.showEyeDropper = enabledSelf;
                     colorField.value = getVector(mainVectorProperty);
+                    break;
+                case ObjectField objectField:
+                    objectField.UnregisterValueChangedCallback(_objectChange);
+                    _objectChange = evt => mainObjectProperty.SetValue(evt.newValue);
+                    objectField.RegisterValueChangedCallback(_objectChange);
+                    objectField.TrackPropertyValue(mainObjectProperty, prop => objectField.value = getObject(prop));
+                    objectField.value = getObject(mainObjectProperty);
+                    objectField.objectType = Type.GetType(objectTypeProperty.stringValue) ?? typeof(UnityEngine.Object);
                     break;
             }
             
