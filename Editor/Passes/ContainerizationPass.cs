@@ -168,7 +168,7 @@ namespace Flare.Editor.Passes
                                     State = property.State,
                                     ColorType = property.ColorType,
                                     ValueType = property.ValueType,
-                                    ContextType = property.ContextType,
+                                    ContextType = c.GetType().AssemblyQualifiedName,
                                     Path = c.transform.GetAnimatablePath(avatarRoot),
                                     
                                     Analog = property.Analog,
