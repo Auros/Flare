@@ -9,6 +9,7 @@ using Flare.Models;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UIElements;
 using VRC.SDKBase;
 using PropertyInfo = Flare.Models.PropertyInfo;
