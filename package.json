@@ -1,7 +1,7 @@
 {
   "name": "nexus.auros.flare",
   "displayName": "Flare",
-  "version": "1.0.0-beta.12",
+  "version": "1.0.0-beta.13",
   "unity": "2022.3",
   "description": "Non-Destructive Avatar Building Tools for VRChat",
   "vrchatVersion": "2023.4.1",
