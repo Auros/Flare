@@ -84,7 +84,7 @@ namespace Flare.Editor.Passes
                     }
 
                     bool? overrideActivity = null;
-                    if (control.Type is ControlType.Menu && control.MenuItem.Type is MenuItemType.Toggle or MenuItemType.Radial)
+                    if (toggle.OverrideDefaultValue && control.Type is ControlType.Menu && control.MenuItem.Type is MenuItemType.Toggle or MenuItemType.Radial)
                     {
                         overrideActivity = (int)toggle.MenuMode is not 1 ==
                                            (control.MenuItem.Type is MenuItemType.Toggle
