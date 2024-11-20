@@ -15,7 +15,7 @@ namespace UnityEngine
                 return string.Empty;
 
             string path = string.Empty;
-            while (transform != transform.root)
+            while (transform != transform.root && transform != root)
             {
                 path = $"{transform.name}/{path}";
                 transform = transform.parent;
@@ -42,11 +42,12 @@ namespace UnityEngine
                         continue;
 
                     target = child;
+                    break;
                 }
             }
 
-            return path != target.GetAnimatablePath(root) ? null
-                : (type == typeof(GameObject) ? target.gameObject : target.GetComponent(type));
+            var animPath = target.GetAnimatablePath(root);
+            return path != animPath ? null : type == typeof(GameObject) ? target.gameObject : target.GetComponent(type);
         }
     }
 }
